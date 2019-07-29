@@ -8,7 +8,7 @@ import 'package:flutter_lime/utils/http_utils.dart';
 import 'dart:io';
 import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/utils.dart';
-
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'ocr_result_page.dart';
 
 //OCR识别页面
@@ -106,6 +106,7 @@ class _OcrPageState extends State<OcrPage> {
       return;
     }
 
+    showLoading();
     var response = await _ocrRequest();
     LogUtils.i("ocr result: $response");
     LogUtils.i("ocr result: ${HttpUtils.accessToken}");
@@ -143,5 +144,33 @@ class _OcrPageState extends State<OcrPage> {
     File file = new File(path);
     List<int> imageBytes = await file.readAsBytes();
     return base64Encode(imageBytes);
+  }
+
+  void showLoading() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+              child: Container(
+            padding: EdgeInsets.only(left: 20),
+            width: 200,
+            height: 80,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                SpinKitCircle(
+                  color: Colors.grey,
+                ),
+                Padding(
+                  padding: EdgeInsets.only(left: 20),
+                ),
+                Text(
+                  "加载中...",
+                  style: TextStyle(fontSize: 16),
+                ),
+              ],
+            ),
+          ));
+        });
   }
 }

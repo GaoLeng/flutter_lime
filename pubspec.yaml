@@ -20,9 +20,10 @@ dependencies:
       ref: camera/crash-fix
       path: packages/camera/
 
-#  image:
-#    git:
-#      url: git://github.com/brendan-duncan/image.git
+  flutter_spinkit: ^3.1.0
+  #  image:
+  #    git:
+  #      url: git://github.com/brendan-duncan/image.git
 
   path_provider: ^0.4.1
 
