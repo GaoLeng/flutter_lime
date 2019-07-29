@@ -1,0 +1,42 @@
+name: flutter_lime
+description: A text scanner app
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^0.1.2
+
+  image_picker: ^0.6.0
+
+  camera:
+    git:
+      url: git://github.com/kmorkos/plugins.git
+      ref: camera/crash-fix
+      path: packages/camera/
+
+#  image:
+#    git:
+#      url: git://github.com/brendan-duncan/image.git
+
+  path_provider: ^0.4.1
+
+  dio: 2.1.13
+
+  fluttertoast: ^3.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - images/splash_bg.png
+    - images/logo.png
