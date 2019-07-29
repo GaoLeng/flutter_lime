@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_lime/pages/main_page.dart';
 import 'package:flutter_lime/pages/splash_page.dart';
 import 'package:flutter_lime/pages/home/settings_page.dart';
@@ -12,6 +15,12 @@ Future main() async {
     cameras = await availableCameras();
   } on CameraException catch (e) {
     print(e.description);
+  }
+
+  if (Platform.isAndroid) {
+    SystemUiOverlayStyle systemUiOverlayStyle =
+        SystemUiOverlayStyle(statusBarColor: Colors.transparent);
+    SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
   }
   runApp(MyApp(cameras));
 }

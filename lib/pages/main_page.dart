@@ -10,6 +10,7 @@ import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:dio/dio.dart';
 import 'dart:convert';
 
+import 'home/history_page.dart';
 import 'ocr_page.dart';
 import 'ocr_result_page.dart';
 
@@ -20,7 +21,7 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  List<Widget> pages = [HomePage(), HomePage()];
+  List<Widget> pages = [HomePage(), HistoryPage()];
   int currPosition = 0;
   String _imagePath;
 

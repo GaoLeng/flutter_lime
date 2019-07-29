@@ -9,7 +9,9 @@ import 'dart:io';
 import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/utils.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'ocr_result_page.dart';
+import 'package:image/image.dart' as ImageUtils;
 
 //OCR识别页面
 class OcrPage extends StatefulWidget {
@@ -114,6 +116,7 @@ class _OcrPageState extends State<OcrPage> {
     OcrResultBean ocrResultBean =
         OcrResultBean.fromJson(jsonDecode(response.toString()));
     if (ocrResultBean.error_code != 0) {
+      dismiss();
       Utils.showMsg("识别失败，${ocrResultBean.error_msg}");
       return;
     }
@@ -121,6 +124,9 @@ class _OcrPageState extends State<OcrPage> {
     for (WordsResult words in ocrResultBean.words_result) {
       buffer.writeln(words.words);
     }
+    dismiss();
+
+    storeOcrResult();
 
     Navigator.push(context, MaterialPageRoute(builder: (context) {
       return OcrResultPage(buffer.toString());
@@ -141,14 +147,24 @@ class _OcrPageState extends State<OcrPage> {
   }
 
   Future img2Base64(String path) async {
-    File file = new File(path);
-    List<int> imageBytes = await file.readAsBytes();
+    ImageUtils.Image image =
+        ImageUtils.decodeImage(File(path).readAsBytesSync());
+    ImageUtils.Image thumbnail = ImageUtils.copyResize(image, width: 400);
+    List<int> imageBytes = ImageUtils.encodePng(thumbnail);
+    LogUtils.i(
+        "image before length: ${image.length}, after length: ${thumbnail.length}");
+
+    // File file = new File(path);
+    // List<int> imageBytes = await file.readAsBytes();
     return base64Encode(imageBytes);
   }
+
+  Future storeOcrResult() async {}
 
   void showLoading() {
     showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) {
           return Dialog(
               child: Container(
@@ -166,11 +182,15 @@ class _OcrPageState extends State<OcrPage> {
                 ),
                 Text(
                   "加载中...",
-                  style: TextStyle(fontSize: 16),
+                  style: TextStyle(fontSize: 18),
                 ),
               ],
             ),
           ));
         });
+  }
+
+  void dismiss() {
+    Navigator.pop(context);
   }
 }

@@ -59,6 +59,13 @@ class _CameraPageState extends State<CameraPage> {
 
   @override
   Widget build(BuildContext context) {
+    var width = 0.0;
+    var height = 0.0;
+    if (_cameraController.value.previewSize != null) {
+      width = _cameraController.value.previewSize.width;
+      height = _cameraController.value.previewSize.height - 80;
+    }
+
     return Material(
         color: Colors.black,
         child: Stack(
@@ -67,8 +74,8 @@ class _CameraPageState extends State<CameraPage> {
             Container(
               alignment: Alignment.center,
               child: Container(
-                width: _cameraController.value.previewSize.width,
-                height: _cameraController.value.previewSize.height - 80,
+                width: width,
+                height: height,
                 child: CameraPreview(_cameraController),
               ),
             ),
@@ -126,6 +133,7 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   Future onLightClicked() async {
+    //TODO ios flash on/off 
     await _channel.invokeMethod(_isFlashOff ? "turnOnFlash" : "turnOffFlash");
     setState(() {
       _isFlashOff = !_isFlashOff;
