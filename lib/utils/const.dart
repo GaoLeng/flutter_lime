@@ -1,3 +1,5 @@
+const bool isDebug = true;
+
 const String app_name = "青柠";
 
 const String page_main = "page_main";

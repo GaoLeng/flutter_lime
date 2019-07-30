@@ -23,7 +23,6 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   List<Widget> pages = [HomePage(), HistoryPage()];
   int currPosition = 0;
-  String _imagePath;
 
   @override
   Widget build(BuildContext context) {

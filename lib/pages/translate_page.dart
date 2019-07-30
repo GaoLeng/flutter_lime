@@ -10,6 +10,7 @@ import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/utils.dart';
 import 'package:crypto/crypto.dart';
 
+//翻译页面
 class TranslatePage extends StatefulWidget {
   String _text;
 
@@ -20,12 +21,22 @@ class TranslatePage extends StatefulWidget {
 }
 
 class _TranslatePageState extends State<TranslatePage> {
-  TextEditingController _editingController;
+  TextEditingController _textEditingController;
+  TextEditingController _translatedEditingController;
+  static const Map<String, String> _languageItemMaps = {
+    "检测语言": "检测语言",
+    "中文": "中文",
+    "英语": "英语",
+    "日语": "日语"
+  };
+  String transFrom = _languageItemMaps["检测语言"];
+  String transTo = _languageItemMaps["检测语言"];
 
   @override
   void initState() {
     super.initState();
-    _editingController = TextEditingController(text: widget._text);
+    _textEditingController = TextEditingController(text: widget._text);
+    _translatedEditingController = TextEditingController();
   }
 
   @override
@@ -36,39 +47,82 @@ class _TranslatePageState extends State<TranslatePage> {
         children: <Widget>[
           Row(
             children: <Widget>[
-              DropdownButton(
-                  items: generateLanguageItems(), onChanged: (value) {}),
+              Padding(padding: EdgeInsets.only(left: 8)),
+              generateDropDownBtnWithExpanded(true),
+              Padding(padding: EdgeInsets.only(left: 8)),
               IconButton(
                 icon: Icon(Icons.cached),
+                onPressed: () {},
               ),
-              DropdownButton(
-                  items: generateLanguageItems(), onChanged: (value) {})
+              Padding(padding: EdgeInsets.only(left: 8)),
+              generateDropDownBtnWithExpanded(false),
+              Padding(padding: EdgeInsets.only(left: 8)),
             ],
           ),
           Expanded(
             flex: 1,
-            child: TextField(controller: _editingController),
+            child: TextField(
+              controller: _textEditingController,
+              maxLines: null,
+              decoration: InputDecoration(
+                  hintText: "请输入文本",
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(8)),
+            ),
           ),
+          Divider(height: 1),
           Expanded(
             flex: 1,
-            child: TextField(controller: _editingController),
+            child: TextField(
+              controller: _translatedEditingController,
+              maxLines: null,
+              decoration: InputDecoration(
+                  border: InputBorder.none, contentPadding: EdgeInsets.all(8)),
+            ),
           ),
-          OutlineButton(
-            onPressed: translate,
-            child: Text("翻译"),
-          )
+          Row(
+            children: <Widget>[
+              Padding(padding: EdgeInsets.only(left: 8)),
+              Expanded(
+                  child: OutlineButton(
+                      onPressed: translate,
+                      color: Colors.green,
+                      hoverColor: Colors.green,
+                      child: Text("翻译", style: TextStyle(fontSize: 18)),
+                      padding: EdgeInsets.all(12))),
+              Padding(padding: EdgeInsets.only(left: 8)),
+            ],
+          ),
+          Padding(padding: EdgeInsets.only(bottom: 16))
         ],
       ),
     );
   }
 
+  Widget generateDropDownBtnWithExpanded(bool isTransFrom) {
+    return Expanded(
+      child: DropdownButton(
+          isExpanded: true,
+          style: TextStyle(fontSize: 18, color: Colors.grey[800]),
+          items: generateLanguageItems(),
+          value: isTransFrom ? transFrom : transTo,
+          onChanged: (value) {
+            if (isTransFrom)
+              transFrom = value;
+            else
+              transTo = value;
+            setState(() {});
+            LogUtils.i("translate value: $value");
+          }),
+    );
+  }
+
   List<DropdownMenuItem> generateLanguageItems() {
-    return [
-      DropdownMenuItem(child: Text("中文")),
-      DropdownMenuItem(child: Text("中文")),
-      DropdownMenuItem(child: Text("中文")),
-      DropdownMenuItem(child: Text("中文"))
-    ];
+    List<DropdownMenuItem> items = List();
+    _languageItemMaps.forEach((key, value) {
+      items.add(DropdownMenuItem(child: Text(key), value: value));
+    });
+    return items;
   }
 
   void translate() {
@@ -77,7 +131,7 @@ class _TranslatePageState extends State<TranslatePage> {
     HttpUtils.getInstance()
         .post(youdao_translate,
             data: {
-              "q": _editingController.text,
+              "q": _textEditingController.text,
               "from": "auto",
               "to": "auto",
               "appKey": youdao_app_key,
@@ -100,7 +154,16 @@ class _TranslatePageState extends State<TranslatePage> {
         Utils.showMsg("翻译失败，错误码： ${bean.errorCode}");
         return;
       }
-      Utils.showMsg("翻译结果: ${bean.translation.toString()}");
+
+      StringBuffer buffer = StringBuffer();
+      bean.translation.forEach((item) {
+        buffer.writeln(item);
+      });
+      String result = buffer.toString();
+      if (result.endsWith("\n")) {
+        result = result.substring(0, result.length - 1);
+      }
+      _translatedEditingController.text = result;
     });
   }
 
@@ -111,7 +174,7 @@ class _TranslatePageState extends State<TranslatePage> {
 
   //根据有道要求截取字符串
   String _getInputText() {
-    var text = _editingController.text;
+    var text = _textEditingController.text;
     var len = text.length;
     return len <= 20
         ? text

@@ -33,15 +33,14 @@ class _OcrResultPageState extends State<OcrResultPage> {
         body: Column(
           children: <Widget>[
             Expanded(
-              child: Container(
-                padding: EdgeInsets.all(8),
-                child: TextField(
-                  decoration: null,
-                  keyboardType: TextInputType.text,
-                  style: TextStyle(),
-                  maxLines: null,
-                  controller: _controller,
-                ),
+              child: TextField(
+                decoration: InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.all(8)),
+                keyboardType: TextInputType.text,
+                style: TextStyle(),
+                maxLines: null,
+                controller: _controller,
               ),
             ),
             Divider(height: 1),

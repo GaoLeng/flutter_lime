@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_lime/beans/db_ocr_history_bean.dart';
 import 'package:flutter_lime/db/database_helper.dart';
+import 'package:flutter_lime/utils/const.dart';
 import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/utils.dart';
 
@@ -30,7 +31,42 @@ class _HistoryPageState extends State<HistoryPage> {
       child: ListView.separated(
         itemCount: histories == null ? 0 : histories.length,
         itemBuilder: ((context, index) {
-          return generateItem(histories[index], index);
+          return Dismissible(
+            key: Key(histories[index].toString()),
+            child: generateItem(histories[index], index),
+            onDismissed: (direction) {
+              histories.removeAt(index);
+            },
+            background: Container(
+              color: Colors.red,
+              child: Center(
+                  child: Text(
+                "删除",
+                style: TextStyle(color: Colors.white),
+              )),
+            ),
+            secondaryBackground: Container(color: Colors.green),
+            confirmDismiss: (DismissDirection direction) async {
+              return await showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text("Confirm"),
+                      content: const Text(
+                          "Are you sure you wish to delete this item?"),
+                      actions: <Widget>[
+                        FlatButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text("DELETE")),
+                        FlatButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text("CANCEL"),
+                        )
+                      ],
+                    );
+                  });
+            },
+          );
         }),
         separatorBuilder: ((context, index) {
           return Divider(height: 1);
@@ -96,9 +132,9 @@ class _HistoryPageState extends State<HistoryPage> {
   void queryHistory() {
     DataBaseHelper.getInstance()
         .getDatabase()
-        .query(DataBaseHelper.table_ocr_history)
+        .query(DataBaseHelper.table_ocr_history, orderBy: "ID desc")
         .then((value) {
-      LogUtils.i("queryHistory: $value");
+      // LogUtils.i("queryHistory: $value");
       histories = List();
       value.forEach((row) {
         histories.add(DBOcrHistoryBean.fromDb(row));
