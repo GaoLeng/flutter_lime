@@ -34,7 +34,13 @@ dependencies:
 
   shared_preferences: ^0.5.3
 
-  sqflite: ^1.1.0
+  sqflite: ^1.1.6
+
+  tts: ^1.0.2
+
+  url_launcher: ^5.1.1
+
+  crypto: 2.0.6
 
 dev_dependencies:
   flutter_test:
@@ -46,3 +52,4 @@ flutter:
   assets:
     - images/splash_bg.png
     - images/logo.png
+    - images/palceholder.png

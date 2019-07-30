@@ -17,8 +17,8 @@ class Utils {
     keys.currentState.showSnackBar(snackBar);
   }
 
-  static String timestamp() =>
-      new DateTime.now().millisecondsSinceEpoch.toString();
+  static int getTimestamp() =>
+      new DateTime.now().millisecondsSinceEpoch;
 
   static Future<String> getRootDir() async {
     final Directory extDir = await getApplicationDocumentsDirectory();
@@ -30,5 +30,10 @@ class Utils {
 
   static void showMsg(String msg) {
     Fluttertoast.showToast(msg: msg);
+  }
+
+  static String getDateTime() {
+    String dateTime = new DateTime.now().toString();
+    return dateTime.substring(0, dateTime.lastIndexOf("."));
   }
 }

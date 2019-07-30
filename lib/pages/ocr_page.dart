@@ -2,14 +2,15 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_lime/beans/db_ocr_history_bean.dart';
 import 'package:flutter_lime/beans/ocr_result_bean.dart';
+import 'package:flutter_lime/db/database_helper.dart';
 import 'package:flutter_lime/utils/const.dart';
 import 'package:flutter_lime/utils/http_utils.dart';
 import 'dart:io';
 import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/utils.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'ocr_result_page.dart';
 import 'package:image/image.dart' as ImageUtils;
 
@@ -126,10 +127,14 @@ class _OcrPageState extends State<OcrPage> {
     }
     dismiss();
 
-    storeOcrResult();
+    var bean = DBOcrHistoryBean(
+        imgPath: widget._imgPath,
+        result: buffer.toString(),
+        dateTime: Utils.getDateTime());
+    storeOcrResult(bean);
 
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return OcrResultPage(buffer.toString());
+      return OcrResultPage(bean);
     }));
   }
 
@@ -159,7 +164,14 @@ class _OcrPageState extends State<OcrPage> {
     return base64Encode(imageBytes);
   }
 
-  Future storeOcrResult() async {}
+  Future storeOcrResult(DBOcrHistoryBean bean) async {
+    DataBaseHelper.getInstance().getDatabase().insert(
+        DataBaseHelper.table_ocr_history, {
+      IMG_PATH: bean.imgPath,
+      RESULT: bean.result,
+      DATE_TIME: bean.dateTime
+    });
+  }
 
   void showLoading() {
     showDialog(
@@ -169,7 +181,7 @@ class _OcrPageState extends State<OcrPage> {
           return Dialog(
               child: Container(
             padding: EdgeInsets.only(left: 20),
-            width: 200,
+            width: 180,
             height: 80,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,

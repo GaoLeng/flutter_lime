@@ -146,7 +146,7 @@ class _CameraPageState extends State<CameraPage> {
       return null;
     }
     var dirPath = await Utils.getRootDir();
-    final String filePath = '$dirPath/${Utils.timestamp()}.jpg';
+    final String filePath = '$dirPath/${Utils.getTimestamp()}.jpg';
 
     if (_cameraController.value.isTakingPicture) {
       // A capture is already pending, do nothing.

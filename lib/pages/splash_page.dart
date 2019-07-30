@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lime/db/database_helper.dart';
 import 'package:flutter_lime/utils/const.dart';
 import 'dart:async';
 import 'package:flutter_lime/utils/http_utils.dart';
@@ -28,6 +29,7 @@ class _SplashPageState extends State<SplashPage> {
       }
     });
     getToken();
+    init();
   }
 
   @override
@@ -80,5 +82,9 @@ class _SplashPageState extends State<SplashPage> {
       HttpUtils.accessToken = map["access_token"];
       LogUtils.i("accessToken: ${HttpUtils.accessToken}");
     });
+  }
+
+  void init() {
+    DataBaseHelper.init();
   }
 }
