@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lime/utils/const.dart';
 import 'package:flutter_lime/utils/utils.dart';
+import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 import 'package:package_info/package_info.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,25 +25,26 @@ class _SettingsPageState extends State<SettingsPage> {
           var version = "";
 
           _settingsItems = [
-            SettingsBean(settings_about, SettingsType.normal),
             SettingsBean(settings_camera, SettingsType.switch_,
                 desc: "打开软件时自动进入拍照页面", value: autoCamera),
-            SettingsBean(settings_donation, SettingsType.click,
-                desc: "您的支持是我更新的动力"),
-            SettingsBean(settings_check_update, SettingsType.click,
-                desc: "当前版本 v$version"),
+            SettingsBean(settings_trans_option, SettingsType.click,
+                desc: "desc"),
+            SettingsBean(settings_theme, SettingsType.click, desc: "当前"),
+            SettingsBean(settings_clear_cache, SettingsType.click,
+                desc: "40.45 M"),
             SettingsBean(settings_update_log, SettingsType.click,
                 desc: "查看历次更新的功能"),
+            SettingsBean(settings_donation, SettingsType.click,
+                desc: "您的支持是我更新的动力"),
             SettingsBean(settings_score, SettingsType.click,
                 desc: "好用的话请给五颗⭐️哦"),
             SettingsBean(settings_feedback, SettingsType.click,
                 desc: "提出您的意见和建议"),
-            SettingsBean(settings_theme, SettingsType.click, desc: "当前"),
-            SettingsBean(settings_clear_cache, SettingsType.click,
-                desc: "40.45 M"),
-            SettingsBean(settings_trans_option, SettingsType.click,
-                desc: "desc"),
+            SettingsBean(settings_check_update, SettingsType.click,
+                desc: "当前版本 v$version"),
+            SettingsBean(settings_about, SettingsType.normal),
           ];
+          setState(() {});
         })
         .then((value) {})
         .then((value) {});
@@ -50,17 +52,21 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("设置")),
-      body: ListView.separated(
-        itemCount: _settingsItems.length,
-        itemBuilder: (context, index) {
-          return _generateSettingsItem(_settingsItems[index], index);
-        },
-        separatorBuilder: (context, index) {
-          return Divider(height: 1);
-        },
-      ),
+    return Scaffold(appBar: AppBar(title: Text("设置")), body: _generateBody());
+  }
+
+  Widget _generateBody() {
+    if (_settingsItems == null || _settingsItems.length == 0) {
+      return Text("暂无数据");
+    }
+    return ListView.separated(
+      itemCount: _settingsItems.length,
+      itemBuilder: (context, index) {
+        return _generateSettingsItem(_settingsItems[index], index);
+      },
+      separatorBuilder: (context, index) {
+        return Divider(height: 1);
+      },
     );
   }
 
@@ -86,49 +92,69 @@ class _SettingsPageState extends State<SettingsPage> {
         break;
       case SettingsType.switch_:
         final bool isCheck = value2Bool(bean.value);
-        row.children.add(Switch(value: isCheck, onChanged: (isCheck) {}));
+        row.children.add(Switch(
+            value: isCheck,
+            onChanged: (isCheck) => _onSwitchChanged(bean, isCheck)));
         break;
     }
     return widget;
   }
-}
 
-_onSettingsItemClicked(SettingsBean bean) {
-  showMsg(bean.title);
-  switch (bean.type) {
-    case SettingsType.normal:
-      return;
-    case SettingsType.click:
-      _processWithType(bean);
-      break;
-    case SettingsType.switch_:
-      bean.value = bool2Value(!value2Bool(bean.value));
-      break;
+  _onSettingsItemClicked(SettingsBean bean) {
+    showMsg(bean.title);
+    switch (bean.type) {
+      case SettingsType.normal:
+        return;
+      case SettingsType.click:
+        _processWithType(bean);
+        break;
+      case SettingsType.switch_:
+        _onSwitchChanged(bean, !value2Bool(bean.value));
+        break;
+    }
   }
-}
 
-_processWithType(SettingsBean bean) {
-  switch (bean.title) {
-    case settings_about:
-      break;
-    case settings_camera:
-      break;
-    case settings_donation:
-      break;
-    case settings_check_update:
-      break;
-    case settings_update_log:
-      break;
-    case settings_score:
-      break;
-    case settings_feedback:
-      break;
-    case settings_theme:
-      break;
-    case settings_clear_cache:
-      break;
-    case settings_trans_option:
-      break;
+  _onSwitchChanged(SettingsBean bean, bool isCheck) {
+    bean.value = bool2Value(isCheck);
+    setState(() {});
+  }
+
+  _processWithType(SettingsBean bean) {
+    switch (bean.title) {
+      case settings_about:
+        break;
+      case settings_camera:
+        break;
+      case settings_donation:
+        break;
+      case settings_check_update:
+        break;
+      case settings_update_log:
+        break;
+      case settings_score:
+        break;
+      case settings_feedback:
+        break;
+      case settings_theme:
+        showDialog(
+            context: context,
+            builder: (_) {
+              return AlertDialog(
+                  content: MaterialColorPicker(
+                      onColorChange: (Color color) {
+                        showMsg("onColorChange: ${color.toString()}");
+                      },
+                      onMainColorChange: (ColorSwatch color) {
+                        showMsg("onMainColorChange: ${color.toString()}");
+                      },
+                      selectedColor: Colors.red));
+            });
+        break;
+      case settings_clear_cache:
+        break;
+      case settings_trans_option:
+        break;
+    }
   }
 }
 

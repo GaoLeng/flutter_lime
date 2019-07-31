@@ -116,17 +116,18 @@ class _OcrResultPageState extends State<OcrResultPage> {
     showMsg("已复制到剪贴板");
   }
 
-  Future _onShareClicked() async {
-    _onCopyClicked();
+  void _onShareClicked() {
+    // _onCopyClicked();
     //TODO 分享文本
     //  weixin://
     //  mqqzone://
-    const shareScheme = 'mqqzone://';
-    if (await canLaunch(shareScheme)) {
-      await launch(shareScheme);
-    } else {
-      showMsg("Could not launch $shareScheme");
-    }
+    shareText(_controller.text);
+    // const shareScheme = 'mqqzone://';
+    // if (await canLaunch(shareScheme)) {
+    //   await launch(shareScheme);
+    // } else {
+    //   showMsg("Could not launch $shareScheme");
+    // }
   }
 
   void _onSpeakClicked() {}

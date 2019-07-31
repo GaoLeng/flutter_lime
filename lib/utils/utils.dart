@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:share/share.dart';
 
 //工具类
 
@@ -31,4 +32,8 @@ String bool2Value(bool value) {
 
 bool value2Bool(String value) {
   return value == "1";
+}
+
+shareText(String text) {
+  Share.share(text);
 }

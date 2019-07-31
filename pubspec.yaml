@@ -41,6 +41,11 @@ dependencies:
   crypto: 2.0.6
   #软件包信息
   package_info: ^0.4.0+6
+  #material颜色选择器
+  flutter_material_color_picker: ^1.0.3
+  #内容分享
+  share: ^0.6.2+1
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
