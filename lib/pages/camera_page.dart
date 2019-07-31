@@ -48,6 +48,11 @@ class _CameraPageState extends State<CameraPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.cameras.length == 0) {
+      showMsg("没有找到相机！");
+      Navigator.pop(context);
+      return;
+    }
     initCamera(widget.cameras[0]);
   }
 
@@ -133,7 +138,7 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   Future onLightClicked() async {
-    //TODO ios flash on/off 
+    //TODO ios flash on/off
     await _channel.invokeMethod(_isFlashOff ? "turnOnFlash" : "turnOffFlash");
     setState(() {
       _isFlashOff = !_isFlashOff;
@@ -145,8 +150,8 @@ class _CameraPageState extends State<CameraPage> {
       LogUtils.i('Error: select a camera first.');
       return null;
     }
-    var dirPath = await Utils.getRootDir();
-    final String filePath = '$dirPath/${Utils.getTimestamp()}.jpg';
+    var dirPath = await getRootDir();
+    final String filePath = '$dirPath/${getTimestamp()}.jpg';
 
     if (_cameraController.value.isTakingPicture) {
       // A capture is already pending, do nothing.

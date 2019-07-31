@@ -80,20 +80,20 @@ class _TranslatePageState extends State<TranslatePage> {
                   border: InputBorder.none, contentPadding: EdgeInsets.all(8)),
             ),
           ),
-          Row(
-            children: <Widget>[
-              Padding(padding: EdgeInsets.only(left: 8)),
-              Expanded(
-                  child: OutlineButton(
-                      onPressed: translate,
-                      color: Colors.green,
-                      hoverColor: Colors.green,
-                      child: Text("翻译", style: TextStyle(fontSize: 18)),
-                      padding: EdgeInsets.all(12))),
-              Padding(padding: EdgeInsets.only(left: 8)),
-            ],
+          SafeArea(
+            child: Row(
+              children: <Widget>[
+                Padding(padding: EdgeInsets.only(left: 8)),
+                Expanded(
+                    child: OutlineButton(
+                        onPressed: translate,
+                        color: Colors.green,
+                        child: Text("翻译", style: TextStyle(fontSize: 18)),
+                        padding: EdgeInsets.all(12))),
+                Padding(padding: EdgeInsets.only(left: 8)),
+              ],
+            ),
           ),
-          Padding(padding: EdgeInsets.only(bottom: 16))
         ],
       ),
     );
@@ -126,7 +126,7 @@ class _TranslatePageState extends State<TranslatePage> {
   }
 
   void translate() {
-    int currTime = Utils.getTimestamp() ~/ 1000;
+    int currTime = getTimestamp() ~/ 1000;
     LogUtils.i("currTime: $currTime");
     HttpUtils.getInstance()
         .post(youdao_translate,
@@ -151,7 +151,7 @@ class _TranslatePageState extends State<TranslatePage> {
       TransResultBean bean =
           TransResultBean.fromDb(jsonDecode(value.toString()));
       if (bean.errorCode != "0") {
-        Utils.showMsg("翻译失败，错误码： ${bean.errorCode}");
+        showMsg("翻译失败，错误码： ${bean.errorCode}");
         return;
       }
 

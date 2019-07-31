@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_lime/beans/db_ocr_history_bean.dart';
@@ -17,6 +19,7 @@ class OcrResultPage extends StatefulWidget {
 
 class _OcrResultPageState extends State<OcrResultPage> {
   TextEditingController _controller;
+  bool _isChecking = false; //是否正在校对
 
   @override
   void initState() {
@@ -43,8 +46,9 @@ class _OcrResultPageState extends State<OcrResultPage> {
                 controller: _controller,
               ),
             ),
-            Divider(height: 1),
-            Row(
+            _generateCheckView(),
+            SafeArea(
+                child: Row(
               children: <Widget>[
                 Padding(padding: EdgeInsets.only(left: 4)),
                 generateIconButtonWithExpanded(
@@ -60,7 +64,7 @@ class _OcrResultPageState extends State<OcrResultPage> {
                     Icons.spellcheck, "校对", _onCheckClicked),
                 Padding(padding: EdgeInsets.only(left: 4)),
               ],
-            )
+            ))
           ],
         ));
   }
@@ -75,7 +79,7 @@ class _OcrResultPageState extends State<OcrResultPage> {
             onLongPress: onLongPress,
             onTap: onTap,
             child: Container(
-              padding: EdgeInsets.only(top: 8, bottom: 12),
+              padding: EdgeInsets.only(top: 8, bottom: 8),
               child: Column(
                 children: <Widget>[
                   Icon(
@@ -92,9 +96,24 @@ class _OcrResultPageState extends State<OcrResultPage> {
             )));
   }
 
+  Widget _generateCheckView() {
+    return _isChecking
+        ? Column(
+            children: <Widget>[
+              Divider(height: 1),
+              Image(
+                image: FileImage(File(widget._bean.imgPath)),
+                fit: BoxFit.fitWidth,
+              ),
+              Divider(height: 1),
+            ],
+          )
+        : Divider(height: 1);
+  }
+
   void _onCopyClicked() {
     Clipboard.setData(ClipboardData(text: _controller.text));
-    Utils.showMsg("已复制到剪贴板");
+    showMsg("已复制到剪贴板");
   }
 
   Future _onShareClicked() async {
@@ -106,7 +125,7 @@ class _OcrResultPageState extends State<OcrResultPage> {
     if (await canLaunch(shareScheme)) {
       await launch(shareScheme);
     } else {
-      Utils.showMsg("Could not launch $shareScheme");
+      showMsg("Could not launch $shareScheme");
     }
   }
 
@@ -120,5 +139,9 @@ class _OcrResultPageState extends State<OcrResultPage> {
     }));
   }
 
-  void _onCheckClicked() {}
+  void _onCheckClicked() {
+    setState(() {
+      _isChecking = !_isChecking;
+    });
+  }
 }

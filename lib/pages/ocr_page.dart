@@ -105,7 +105,7 @@ class _OcrPageState extends State<OcrPage> {
   //识别
   Future ocr() async {
     if (HttpUtils.accessToken == null) {
-      Utils.showMsg("no accessToken");
+      showMsg("no accessToken");
       return;
     }
 
@@ -118,7 +118,7 @@ class _OcrPageState extends State<OcrPage> {
         OcrResultBean.fromJson(jsonDecode(response.toString()));
     if (ocrResultBean.error_code != 0) {
       dismiss();
-      Utils.showMsg("识别失败，${ocrResultBean.error_msg}");
+      showMsg("识别失败，${ocrResultBean.error_msg}");
       return;
     }
     StringBuffer buffer = StringBuffer();
@@ -130,7 +130,7 @@ class _OcrPageState extends State<OcrPage> {
     var bean = DBOcrHistoryBean(
         imgPath: widget._imgPath,
         result: buffer.toString(),
-        dateTime: Utils.getDateTime());
+        dateTime: getDateTime());
     storeOcrResult(bean);
 
     Navigator.push(context, MaterialPageRoute(builder: (context) {

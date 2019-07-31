@@ -6,6 +6,6 @@ class LogUtils {
   static void e(String msg) => _log("e", msg);
 
   static void _log(String tag, String msg) {
-    if (isDebug) print("$tag:--------> $msg");
+    if (is_debug) print("$tag:--------> $msg");
   }
 }
