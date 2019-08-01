@@ -99,7 +99,7 @@ class _OcrPageState extends State<OcrPage> {
 //    });
   }
 
-  void onDoneClicked() {
+  Future onDoneClicked() async {
     if (HttpUtils.accessToken == null) {
       showMsg("no accessToken");
       return;
@@ -135,15 +135,15 @@ class _OcrPageState extends State<OcrPage> {
     storeOcrResult(bean);
 
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return OcrResultPage(bean);
+      return OcrResultPage([bean]);
     }));
   }
 
   Future _ocrRequest() async {
-    return await HttpUtils.getInstance().post(badiu_ocr_url_basic,
+    return HttpUtils.getInstance().post(badiu_ocr_url_basic,
         data: {
           'access_token': HttpUtils.accessToken,
-          'image': await img2Base64(widget._imgPath)
+          'image': img2Base64(widget._imgPath)
 //          'url':
 //              'https://cn.bing.com/th?id=OIP.eY74-PmsXafwG2VJ9Qv8qQHaHU&pid=Api&rs=1'
         },
@@ -152,16 +152,19 @@ class _OcrPageState extends State<OcrPage> {
                 ContentType.parse("application/x-www-form-urlencoded")));
   }
 
-  Future img2Base64(String path) async {
+  img2Base64(String path) {
     ImageUtils.Image image =
         ImageUtils.decodeImage(File(path).readAsBytesSync());
     ImageUtils.Image thumbnail = ImageUtils.copyResize(image, width: 400);
-    List<int> imageBytes = ImageUtils.encodePng(thumbnail);
+    List<int> imageBytes = ImageUtils.encodeJpg(thumbnail);
+
+    //压缩过的图片当成缩略图存储下来
+    File('$path$image_suffix')
+      ..writeAsBytes(imageBytes).then((file) {
+        file.create();
+      });
     LogUtils.i(
         "image before length: ${image.length}, after length: ${thumbnail.length}");
-
-    // File file = new File(path);
-    // List<int> imageBytes = await file.readAsBytes();
     return base64Encode(imageBytes);
   }
 
@@ -174,7 +177,7 @@ class _OcrPageState extends State<OcrPage> {
     });
   }
 
-  void showLoading() {
+  showLoading() {
     showDialog(
         context: context,
         barrierDismissible: false,

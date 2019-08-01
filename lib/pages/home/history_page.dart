@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_lime/beans/db_ocr_history_bean.dart';
 import 'package:flutter_lime/db/database_helper.dart';
+import 'package:flutter_lime/pages/img_view_page.dart';
+import 'package:flutter_lime/utils/const.dart';
 import 'package:flutter_lime/utils/log_utils.dart';
 
 import '../ocr_result_page.dart';
@@ -14,8 +16,7 @@ class HistoryPage extends StatefulWidget {
   _HistoryPageState createState() => _HistoryPageState();
 }
 
-class _HistoryPageState extends State<HistoryPage>
-    with AutomaticKeepAliveClientMixin {
+class _HistoryPageState extends State<HistoryPage> {
   List<DBOcrHistoryBean> histories;
 
   _HistoryPageState() {}
@@ -52,16 +53,15 @@ class _HistoryPageState extends State<HistoryPage>
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                      title: const Text("Confirm"),
-                      content: const Text(
-                          "Are you sure you wish to delete this item?"),
+                      title: const Text("提示"),
+                      content: const Text("确认要删除此记录吗？"),
                       actions: <Widget>[
                         FlatButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text("DELETE")),
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text("删除")),
                         FlatButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: const Text("CANCEL"),
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text("取消"),
                         )
                       ],
                     );
@@ -83,15 +83,23 @@ class _HistoryPageState extends State<HistoryPage>
         padding: EdgeInsets.all(8),
         child: Row(
           children: <Widget>[
-            ClipRRect(
-              borderRadius: BorderRadius.all(Radius.circular(4)),
-              child: FadeInImage(
-                fadeInDuration: Duration(milliseconds: 100),
-                placeholder: AssetImage("images/palceholder.png"),
-                image: FileImage(File(bean.imgPath)),
-                width: 72,
-                height: 72,
-                fit: BoxFit.cover,
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return ImageViewPage(bean);
+                }));
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(4)),
+                child: FadeInImage(
+                  key: Key(bean.imgPath),
+                  fadeInDuration: Duration(milliseconds: 100),
+                  placeholder: AssetImage("images/palceholder.png"),
+                  image: FileImage(File(bean.imgPath + image_suffix)),
+                  width: 72,
+                  height: 72,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             SizedBox(width: 16),
@@ -126,7 +134,7 @@ class _HistoryPageState extends State<HistoryPage>
 
   void _onItemClick(int index) {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return OcrResultPage(histories[index]);
+      return OcrResultPage([histories[index]]);
     }));
   }
 
@@ -138,13 +146,12 @@ class _HistoryPageState extends State<HistoryPage>
       // LogUtils.i("queryHistory: $value");
       histories = List();
       value.forEach((row) {
-        histories.add(DBOcrHistoryBean.fromDb(row));
+        var bean = DBOcrHistoryBean.fromDb(row);
+        histories.add(bean);
+        // precacheImage(FileImage(File(bean.imgPath)), context);
       });
       if (histories.length == 0) return;
       setState(() {});
     });
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

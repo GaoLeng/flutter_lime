@@ -4,14 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_lime/beans/db_ocr_history_bean.dart';
 import 'package:flutter_lime/pages/translate_page.dart';
+import 'package:flutter_lime/utils/const.dart';
 import 'package:flutter_lime/utils/utils.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:back_button_interceptor/back_button_interceptor.dart';
+import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 
 //OCR识别结果页
 class OcrResultPage extends StatefulWidget {
-  DBOcrHistoryBean _bean;
+  List<DBOcrHistoryBean> _beans;
 
-  OcrResultPage(this._bean);
+  OcrResultPage(this._beans);
 
   @override
   _OcrResultPageState createState() => _OcrResultPageState();
@@ -24,7 +26,18 @@ class _OcrResultPageState extends State<OcrResultPage> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget._bean.result);
+    var results = "";
+    widget._beans.forEach((bean) {
+      results += bean.result + "\n\n";
+    });
+    _controller = TextEditingController(text: results);
+    BackButtonInterceptor.add(onBackInterceptor);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    BackButtonInterceptor.remove(onBackInterceptor);
   }
 
   @override
@@ -36,6 +49,7 @@ class _OcrResultPageState extends State<OcrResultPage> {
         body: Column(
           children: <Widget>[
             Expanded(
+              flex: 1,
               child: TextField(
                 decoration: InputDecoration(
                     border: InputBorder.none,
@@ -61,7 +75,10 @@ class _OcrResultPageState extends State<OcrResultPage> {
                 generateIconButtonWithExpanded(
                     Icons.g_translate, "翻译", _onTranslateClicked),
                 generateIconButtonWithExpanded(
-                    Icons.spellcheck, "校对", _onCheckClicked),
+                    Icons.spellcheck, "校对", _onCheckClicked,
+                    color: _isChecking
+                        ? materialColors[currThemeColorIndex]
+                        : null),
                 Padding(padding: EdgeInsets.only(left: 4)),
               ],
             ))
@@ -72,7 +89,8 @@ class _OcrResultPageState extends State<OcrResultPage> {
   //生成底部按钮
   Widget generateIconButtonWithExpanded(
       IconData icon, String text, VoidCallback onTap,
-      {VoidCallback onLongPress}) {
+      {VoidCallback onLongPress, color}) {
+    if (color == null) color = Colors.grey[700];
     return Expanded(
         flex: 1,
         child: InkWell(
@@ -85,11 +103,11 @@ class _OcrResultPageState extends State<OcrResultPage> {
                   Icon(
                     icon,
                     size: 20,
-                    color: Colors.grey[700],
+                    color: color,
                   ),
                   Text(
                     text,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                    style: TextStyle(fontSize: 12, color: color),
                   )
                 ],
               ),
@@ -98,15 +116,16 @@ class _OcrResultPageState extends State<OcrResultPage> {
 
   Widget _generateCheckView() {
     return _isChecking
-        ? Column(
-            children: <Widget>[
-              Divider(height: 1),
-              Image(
-                image: FileImage(File(widget._bean.imgPath)),
-                fit: BoxFit.fitWidth,
-              ),
-              Divider(height: 1),
-            ],
+        ? Expanded(
+            flex: 1,
+            child: ListView.builder(
+              itemCount: widget._beans.length,
+              itemBuilder: (context, index) {
+                return Image(
+                  image: FileImage(File(widget._beans[index].imgPath)),
+                );
+              },
+            ),
           )
         : Divider(height: 1);
   }
@@ -144,5 +163,14 @@ class _OcrResultPageState extends State<OcrResultPage> {
     setState(() {
       _isChecking = !_isChecking;
     });
+  }
+
+  //拦截返回按钮 true为拦截
+  bool onBackInterceptor(bool stopDefaultButtonEvent) {
+    if (_isChecking) {
+      _onCheckClicked();
+      return true;
+    }
+    return false;
   }
 }

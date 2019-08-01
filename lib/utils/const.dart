@@ -46,3 +46,6 @@ const String settings_feedback = "反馈";
 const String settings_theme = "主题色";
 const String settings_clear_cache = "清除缓存";
 const String settings_trans_option = "翻译选项";
+
+//----------------------其他---------------------------
+const String image_suffix = "_thumbnail.jpg";//ocr缩略图文件名后缀
