@@ -5,6 +5,9 @@ import 'dart:async';
 import 'package:flutter_lime/utils/http_utils.dart';
 import 'dart:convert';
 import 'package:flutter_lime/utils/log_utils.dart';
+import 'package:flutter_lime/utils/store.dart';
+import 'package:flutter_lime/utils/utils.dart';
+import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 
 //欢迎页
 class SplashPage extends StatefulWidget {
@@ -28,47 +31,58 @@ class _SplashPageState extends State<SplashPage> {
         timer?.cancel();
       }
     });
-    getToken();
     init();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-        child: Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-            image: AssetImage("images/splash_bg.png"), fit: BoxFit.fill),
-      ),
-      child: Column(
-        children: <Widget>[
-          Expanded(flex: 1, child: Text("")),
+    var color = materialColors[currThemeColorIndex];
+    var widget = Material(
+        color: Colors.grey[100],
+        child: Column(children: <Widget>[
+          Padding(padding: EdgeInsets.only(top: 80)),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Image(
-                image: AssetImage("images/logo.png"),
-                width: 80,
-                height: 80,
+              Container(
+                width: 6,
+                height: 136,
+                color: color,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
+              Padding(padding: EdgeInsets.only(left: 18)),
+              Container(
+                  width: 56,
+                  child: Text(
                     app_name,
-                    style: TextStyle(fontSize: 22),
-                  ),
-                  Text("文字识别")
-                ],
-              )
+                    style: TextStyle(fontSize: 56, color: color),
+                    softWrap: true,
+                    maxLines: app_name.length,
+                  )),
+              Padding(padding: EdgeInsets.only(left: 24)),
+              Container(
+                  width: 20,
+                  padding: EdgeInsets.only(top: 180),
+                  child: Text(
+                    app_desc,
+                    style: TextStyle(fontSize: 20, color: color),
+                    softWrap: true,
+                    maxLines: app_desc.length,
+                  ))
             ],
           ),
-          Padding(
-            padding: EdgeInsets.only(bottom: 40),
-          )
-        ],
-      ),
-    ));
+          Expanded(
+              child: SafeArea(
+            child: Container(
+              padding: EdgeInsets.only(bottom: 20),
+              alignment: Alignment.bottomCenter,
+              child: Text(
+                "By GaoLeng.",
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            ),
+          ))
+        ]));
+    return widget;
   }
 
   void getToken() {
@@ -84,7 +98,13 @@ class _SplashPageState extends State<SplashPage> {
     });
   }
 
-  void init() {
+  //参数初始化方法，由于主题比较特殊，放在main中初始化
+  void init() async {
+    getToken();
     DataBaseHelper.init();
+    getBySP([settings_camera]).then((kv) {
+      var isAutoCamera = kv[settings_camera];
+      if (isAutoCamera != null) currIsAutoCamera = isAutoCamera;
+    });
   }
 }

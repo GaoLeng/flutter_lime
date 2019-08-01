@@ -1,6 +1,13 @@
 //--------------------配置------------------------
+import 'package:camera/camera.dart';
+
 const bool is_debug = true;
 const String app_name = "青柠";
+const String app_desc = "移动扫描仪";
+const int default_theme_color_index = 8;
+int currThemeColorIndex = default_theme_color_index;
+bool currIsAutoCamera = false;
+List<CameraDescription> currAvailableCameras = [];
 
 //--------------------路由------------------------
 const String page_main = "page_main";

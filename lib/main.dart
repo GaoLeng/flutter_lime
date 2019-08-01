@@ -8,11 +8,16 @@ import 'package:flutter_lime/pages/home/settings_page.dart';
 import 'package:flutter_lime/utils/const.dart';
 import 'package:flutter_lime/pages/camera_page.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter_lime/utils/store.dart';
+import 'package:flutter_lime/utils/utils.dart';
+
+import 'beans/theme_config_bean.dart';
 
 Future main() async {
-  var cameras;
   try {
-    cameras = await availableCameras();
+    availableCameras().then((cameras) {
+      if (cameras != null) currAvailableCameras = cameras;
+    });
   } on CameraException catch (e) {
     print(e.description);
   }
@@ -22,26 +27,33 @@ Future main() async {
         SystemUiOverlayStyle(statusBarColor: Colors.transparent);
     SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
   }
-  runApp(MyApp(cameras));
+
+  await getBySP([settings_theme]).then((kv) {
+    var index = kv[settings_theme];
+    if (index != null) {
+      currThemeColorIndex = index;
+    }
+  });
+
+  runApp(Store.init(MyApp()));
 }
 
 class MyApp extends StatelessWidget {
-  List<CameraDescription> cameras;
-
-  MyApp(this.cameras);
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      routes: {
-        page_main: (context) => MainPage(),
-        page_settings: (context) => SettingsPage(),
-        page_camera: (context) => CameraPage(cameras)
-      },
-      home: SplashPage(),
-    );
+    return Store.connect<ThemeConfigModel>(builder: (context, child, value) {
+      return MaterialApp(
+        theme: ThemeData(
+          primarySwatch: value.theme,
+        ),
+        routes: {
+          page_main: (context) => MainPage(),
+          page_settings: (context) => SettingsPage(),
+          page_camera: (context) => CameraPage()
+        },
+        home: SplashPage(),
+      );
+    });
   }
 }

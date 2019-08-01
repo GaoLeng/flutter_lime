@@ -9,6 +9,7 @@ import 'package:flutter_lime/utils/http_utils.dart';
 import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/utils.dart';
 import 'package:crypto/crypto.dart';
+import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 
 //翻译页面
 class TranslatePage extends StatefulWidget {
@@ -87,7 +88,7 @@ class _TranslatePageState extends State<TranslatePage> {
                 Expanded(
                     child: OutlineButton(
                         onPressed: translate,
-                        color: Colors.green,
+                        color: materialColors[currThemeColorIndex],
                         child: Text("翻译", style: TextStyle(fontSize: 18)),
                         padding: EdgeInsets.all(12))),
                 Padding(padding: EdgeInsets.only(left: 8)),

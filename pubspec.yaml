@@ -45,7 +45,8 @@ dependencies:
   flutter_material_color_picker: ^1.0.3
   #内容分享
   share: ^0.6.2+1
-  
+  #状态机
+  provide: ^1.0.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,18 +1,11 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_lime/beans/ocr_result_bean.dart';
 import 'package:flutter_lime/pages/home/home_page.dart';
-import 'package:flutter_lime/utils/utils.dart';
 import 'package:flutter_lime/utils/const.dart';
-import 'package:flutter_lime/utils/http_utils.dart';
 import 'package:flutter_lime/utils/log_utils.dart';
-import 'package:dio/dio.dart';
-import 'dart:convert';
+import 'package:flutter_lime/utils/utils.dart';
 
 import 'home/history_page.dart';
 import 'ocr_page.dart';
-import 'ocr_result_page.dart';
 
 //首页
 class MainPage extends StatefulWidget {
@@ -25,10 +18,20 @@ class _MainPageState extends State<MainPage> {
   int currPosition = 0;
 
   @override
+  void initState() {
+    super.initState();
+    if (currIsAutoCamera) {
+      Future.delayed(Duration(milliseconds: 100), () {
+        _openCamera();
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: generateAppBar(),
-        body: pages[currPosition],
+        body: IndexedStack(index: currPosition, children: pages),
         floatingActionButton: FloatingActionButton(
           onPressed: onCameraClicked,
           child: Icon(Icons.photo_camera),
@@ -72,6 +75,11 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future _openCamera() async {
+    if (currAvailableCameras.length == 0) {
+      showMsg("没有找到相机！");
+      return;
+    }
+
     final imgPath = await Navigator.pushNamed(context, page_camera);
 
     if (imgPath == null) return;

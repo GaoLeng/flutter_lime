@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:share/share.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 //工具类
 
@@ -34,6 +35,31 @@ bool value2Bool(String value) {
   return value == "1";
 }
 
-shareText(String text) {
+shareText(text) {
   Share.share(text);
+}
+
+saveBySP(key, value) {
+  SharedPreferences.getInstance().then((sp) {
+    if (value is String) {
+      sp.setString(key, value);
+    } else if (value is int) {
+      sp.setInt(key, value);
+    } else if (value is bool) {
+      sp.setBool(key, value);
+    } else {
+      showMsg("saveBySP 失败！");
+    }
+  });
+}
+
+Future<Map<String, dynamic>> getBySP(List<String> keys) async {
+  if (keys == null || keys.isEmpty) return null;
+  return await SharedPreferences.getInstance().then((sp) {
+    Map<String, dynamic> kv = Map();
+    keys.forEach((key) {
+      kv[key] = sp.get(key);
+    });
+    return kv;
+  });
 }

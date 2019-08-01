@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lime/beans/theme_config_bean.dart';
 import 'package:flutter_lime/utils/const.dart';
+import 'package:flutter_lime/utils/store.dart';
 import 'package:flutter_lime/utils/utils.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
-import 'package:package_info/package_info.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 //设置页面
 class SettingsPage extends StatefulWidget {
@@ -18,18 +18,18 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
 
-    SharedPreferences.getInstance()
-        .then((value) {
-          var autoCamera = value.getString(settings_camera);
+    getBySP([settings_camera, settings_trans_option, settings_theme])
+        .then((kv) {
 //      PackageInfo packageInfo = await PackageInfo.fromPlatform();
           var version = "";
 
           _settingsItems = [
             SettingsBean(settings_camera, SettingsType.switch_,
-                desc: "打开软件时自动进入拍照页面", value: autoCamera),
+                desc: "打开软件时自动进入拍照页面", value: currIsAutoCamera),
             SettingsBean(settings_trans_option, SettingsType.click,
                 desc: "desc"),
-            SettingsBean(settings_theme, SettingsType.click, desc: "当前"),
+            SettingsBean(settings_theme, SettingsType.color,
+                desc: "选择MD颜色", value: currThemeColorIndex),
             SettingsBean(settings_clear_cache, SettingsType.click,
                 desc: "40.45 M"),
             SettingsBean(settings_update_log, SettingsType.click,
@@ -42,7 +42,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 desc: "提出您的意见和建议"),
             SettingsBean(settings_check_update, SettingsType.click,
                 desc: "当前版本 v$version"),
-            SettingsBean(settings_about, SettingsType.normal),
+            SettingsBean(settings_about, SettingsType.click),
           ];
           setState(() {});
         })
@@ -84,16 +84,20 @@ class _SettingsPageState extends State<SettingsPage> {
         child:
             Container(padding: EdgeInsets.fromLTRB(12, 8, 12, 8), child: row));
     switch (bean.type) {
-      case SettingsType.normal:
-        //to do nothing.
-        break;
       case SettingsType.click:
         //to do nothing.
         break;
+      case SettingsType.color:
+        row.children.add(Container(
+          width: 46,
+          height: 24,
+          decoration: BoxDecoration(
+              shape: BoxShape.circle, color: materialColors[bean.value]),
+        ));
+        break;
       case SettingsType.switch_:
-        final bool isCheck = value2Bool(bean.value);
         row.children.add(Switch(
-            value: isCheck,
+            value: bean.value,
             onChanged: (isCheck) => _onSwitchChanged(bean, isCheck)));
         break;
     }
@@ -101,22 +105,24 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   _onSettingsItemClicked(SettingsBean bean) {
-    showMsg(bean.title);
     switch (bean.type) {
-      case SettingsType.normal:
-        return;
       case SettingsType.click:
         _processWithType(bean);
         break;
+      case SettingsType.color:
+        _showThemeColorPicker(bean);
+        break;
       case SettingsType.switch_:
-        _onSwitchChanged(bean, !value2Bool(bean.value));
+        _onSwitchChanged(bean, !bean.value);
         break;
     }
   }
 
   _onSwitchChanged(SettingsBean bean, bool isCheck) {
-    bean.value = bool2Value(isCheck);
+    currIsAutoCamera = isCheck;
+    bean.value = currIsAutoCamera;
     setState(() {});
+    saveBySP(bean.key, currIsAutoCamera);
   }
 
   _processWithType(SettingsBean bean) {
@@ -135,26 +141,32 @@ class _SettingsPageState extends State<SettingsPage> {
         break;
       case settings_feedback:
         break;
-      case settings_theme:
-        showDialog(
-            context: context,
-            builder: (_) {
-              return AlertDialog(
-                  content: MaterialColorPicker(
-                      onColorChange: (Color color) {
-                        showMsg("onColorChange: ${color.toString()}");
-                      },
-                      onMainColorChange: (ColorSwatch color) {
-                        showMsg("onMainColorChange: ${color.toString()}");
-                      },
-                      selectedColor: Colors.red));
-            });
-        break;
       case settings_clear_cache:
         break;
       case settings_trans_option:
         break;
     }
+  }
+
+  //主题色dialog
+  _showThemeColorPicker(SettingsBean bean) {
+    showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+              title: Text("选择主题色"),
+              content: MaterialColorPicker(
+                  allowShades: false,
+                  onColorChange: (Color color) {},
+                  onMainColorChange: (ColorSwatch color) {
+                    Store.value<ThemeConfigModel>(context).setTheme(color);
+                    Navigator.pop(context);
+                    currThemeColorIndex =
+                        bean.value = materialColors.indexOf(color);
+                    saveBySP(bean.key, bean.value);
+                  },
+                  selectedColor: materialColors[currThemeColorIndex]));
+        });
   }
 }
 
@@ -162,20 +174,20 @@ class SettingsBean {
   String title; //标题
   String desc; //描述
 //  IconData icon; //图标
-  String value; //设置的值
-  String tag; //标签，用来作为SharedPreference的key
+  dynamic value; //设置的值
+  String key; //标签，用来作为SharedPreference的key
   SettingsType type; //设置的类型
   List<dynamic> options; //选项
 
   SettingsBean(this.title, this.type,
       {this.desc = "", this.value, this.options}) {
-    this.tag = title;
+    this.key = title;
   }
 }
 
 //设置类型
 enum SettingsType {
-  normal, //普通
   click, //单击
+  color,
   switch_, //选项切换
 }

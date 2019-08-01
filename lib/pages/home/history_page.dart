@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_lime/beans/db_ocr_history_bean.dart';
 import 'package:flutter_lime/db/database_helper.dart';
-import 'package:flutter_lime/utils/const.dart';
 import 'package:flutter_lime/utils/log_utils.dart';
-import 'package:flutter_lime/utils/utils.dart';
 
 import '../ocr_result_page.dart';
 
@@ -16,13 +14,17 @@ class HistoryPage extends StatefulWidget {
   _HistoryPageState createState() => _HistoryPageState();
 }
 
-class _HistoryPageState extends State<HistoryPage> {
+class _HistoryPageState extends State<HistoryPage>
+    with AutomaticKeepAliveClientMixin {
   List<DBOcrHistoryBean> histories;
+
+  _HistoryPageState() {}
 
   @override
   void initState() {
     super.initState();
     queryHistory();
+    LogUtils.i("history page initState.");
   }
 
   @override
@@ -45,7 +47,6 @@ class _HistoryPageState extends State<HistoryPage> {
                 style: TextStyle(color: Colors.white),
               )),
             ),
-            secondaryBackground: Container(color: Colors.green),
             confirmDismiss: (DismissDirection direction) async {
               return await showDialog(
                   context: context,
@@ -143,4 +144,7 @@ class _HistoryPageState extends State<HistoryPage> {
       setState(() {});
     });
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

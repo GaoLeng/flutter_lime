@@ -1,9 +1,8 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_lime/utils/const.dart';
+import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/utils.dart';
 
@@ -11,9 +10,7 @@ const MethodChannel _channel = const MethodChannel('plugins.flutter.io/camera');
 
 //拍照页面
 class CameraPage extends StatefulWidget {
-  List<CameraDescription> cameras;
-
-  CameraPage(this.cameras);
+  CameraPage();
 
   @override
   _CameraPageState createState() => _CameraPageState();
@@ -48,12 +45,7 @@ class _CameraPageState extends State<CameraPage> {
   @override
   void initState() {
     super.initState();
-    if (widget.cameras.length == 0) {
-      showMsg("没有找到相机！");
-      Navigator.pop(context);
-      return;
-    }
-    initCamera(widget.cameras[0]);
+    initCamera(currAvailableCameras[0]);
   }
 
   @override
@@ -66,42 +58,43 @@ class _CameraPageState extends State<CameraPage> {
   Widget build(BuildContext context) {
     var width = 0.0;
     var height = 0.0;
-    if (_cameraController.value.previewSize != null) {
-      width = _cameraController.value.previewSize.width;
-      height = _cameraController.value.previewSize.height - 80;
-    }
-
-    return Material(
-        color: Colors.black,
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: <Widget>[
-            Container(
-              alignment: Alignment.center,
-              child: Container(
-                width: width,
-                height: height,
-                child: CameraPreview(_cameraController),
-              ),
+    var body;
+    if (currAvailableCameras.isEmpty) {
+      body = Container();
+    } else {
+      if (_cameraController.value.previewSize != null) {
+        width = _cameraController.value.previewSize.width;
+        height = _cameraController.value.previewSize.height - 80;
+      }
+      body = Stack(
+        alignment: Alignment.bottomCenter,
+        children: <Widget>[
+          Container(
+            alignment: Alignment.center,
+            child: Container(
+              width: width,
+              height: height,
+              child: CameraPreview(_cameraController),
             ),
-            Container(
-              padding: EdgeInsets.only(bottom: 32),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  generateIconButtonWithExpanded(
-                      Icons.close, 28, onCloseClicked),
-                  generateIconButtonWithExpanded(
-                      Icons.camera, 56, onTakeClicked),
-                  generateIconButtonWithExpanded(
-                      _isFlashOff ? Icons.flash_off : Icons.flash_on,
-                      28,
-                      onLightClicked)
-                ],
-              ),
-            )
-          ],
-        ));
+          ),
+          Container(
+            padding: EdgeInsets.only(bottom: 32),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                generateIconButtonWithExpanded(Icons.close, 28, onCloseClicked),
+                generateIconButtonWithExpanded(Icons.camera, 56, onTakeClicked),
+                generateIconButtonWithExpanded(
+                    _isFlashOff ? Icons.flash_off : Icons.flash_on,
+                    28,
+                    onLightClicked)
+              ],
+            ),
+          )
+        ],
+      );
+    }
+    return Material(color: Colors.black, child: body);
   }
 
   //生成底部按钮
@@ -112,7 +105,7 @@ class _CameraPageState extends State<CameraPage> {
       child: IconButton(
         onPressed: function,
         iconSize: iconSize,
-        highlightColor: Colors.green,
+        highlightColor: materialColors[currThemeColorIndex],
         color: Colors.white,
         icon: Icon(icon),
       ),

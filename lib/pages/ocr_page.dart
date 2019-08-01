@@ -10,6 +10,7 @@ import 'package:flutter_lime/utils/http_utils.dart';
 import 'dart:io';
 import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/utils.dart';
+import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'ocr_result_page.dart';
 import 'package:image/image.dart' as ImageUtils;
@@ -76,7 +77,7 @@ class _OcrPageState extends State<OcrPage> {
         child: IconButton(
           onPressed: function,
           iconSize: 28,
-          highlightColor: Colors.green,
+          highlightColor: materialColors[currThemeColorIndex],
           color: Colors.white,
           icon: Icon(icon),
         ));
@@ -99,17 +100,17 @@ class _OcrPageState extends State<OcrPage> {
   }
 
   void onDoneClicked() {
-    ocr();
-  }
-
-  //识别
-  Future ocr() async {
     if (HttpUtils.accessToken == null) {
       showMsg("no accessToken");
       return;
     }
 
     showLoading();
+    ocr();
+  }
+
+  //识别
+  Future ocr() async {
     var response = await _ocrRequest();
     LogUtils.i("ocr result: $response");
     LogUtils.i("ocr result: ${HttpUtils.accessToken}");
