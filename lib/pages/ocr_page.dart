@@ -3,17 +3,18 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_lime/beans/db_ocr_history_bean.dart';
+import 'package:flutter_lime/beans/baidu_ocr_result_bean.dart';
 import 'package:flutter_lime/beans/ocr_result_bean.dart';
 import 'package:flutter_lime/db/database_helper.dart';
 import 'package:flutter_lime/utils/const.dart';
+import 'package:flutter_lime/utils/file_utils.dart';
 import 'package:flutter_lime/utils/http_utils.dart';
+import 'package:flutter_lime/utils/image_utils.dart';
 import 'dart:io';
 import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/utils.dart';
-import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'ocr_result_page.dart';
-import 'package:image/image.dart' as ImageUtils;
 
 //OCR识别页面
 class OcrPage extends StatefulWidget {
@@ -77,7 +78,7 @@ class _OcrPageState extends State<OcrPage> {
         child: IconButton(
           onPressed: function,
           iconSize: 28,
-          highlightColor: materialColors[currThemeColorIndex],
+          highlightColor: themeColors[currThemeColorIndex],
           color: Colors.white,
           icon: Icon(icon),
         ));
@@ -110,69 +111,69 @@ class _OcrPageState extends State<OcrPage> {
   }
 
   //识别
-  Future ocr() async {
-    var response = await _ocrRequest();
-    LogUtils.i("ocr result: $response");
-    LogUtils.i("ocr result: ${HttpUtils.accessToken}");
-
-    OcrResultBean ocrResultBean =
-        OcrResultBean.fromJson(jsonDecode(response.toString()));
-    if (ocrResultBean.error_code != 0) {
+  void ocr() {
+    final widthForOcr = sizeForOcr.width.toInt();
+    final heightForOcr = sizeForOcr.height.toInt();
+    HttpUtils.ocrByBaidu(widget._imgPath, widthForOcr, heightForOcr)
+        .then((response) {
+      LogUtils.i("ocr result: $response");
+      LogUtils.i("ocr result: ${HttpUtils.accessToken}");
+      var resStr = response.toString();
+      BaiDuOcrResultBean ocrResultBean =
+          BaiDuOcrResultBean.fromJson(jsonDecode(resStr));
+      if (ocrResultBean.error_code != 0) {
+        dismiss();
+        showMsg("识别失败，${ocrResultBean.error_msg}");
+        return;
+      }
+      StringBuffer buffer = StringBuffer();
+      for (OcrResultBean words in ocrResultBean.words_result) {
+        buffer.writeln(words.words);
+      }
       dismiss();
-      showMsg("识别失败，${ocrResultBean.error_msg}");
-      return;
-    }
-    StringBuffer buffer = StringBuffer();
-    for (WordsResult words in ocrResultBean.words_result) {
-      buffer.writeln(words.words);
-    }
-    dismiss();
 
-    var bean = DBOcrHistoryBean(
-        imgPath: widget._imgPath,
-        result: buffer.toString(),
-        dateTime: getDateTime());
-    storeOcrResult(bean);
+      var bean = DBOcrHistoryBean(
+          imgPath: widget._imgPath,
+          jsonResult: resStr,
+          result: buffer.toString(),
+          jsonType: 1,
+          widthForOcr: widthForOcr,
+          heightForOcr: heightForOcr,
+          dateTime: getDateTime());
 
-    Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return OcrResultPage([bean]);
-    }));
+      saveOcrResult(bean);
+
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return OcrResultPage([bean]);
+      }));
+    });
   }
 
-  Future _ocrRequest() async {
-    return HttpUtils.getInstance().post(badiu_ocr_url_basic,
-        data: {
-          'access_token': HttpUtils.accessToken,
-          'image': img2Base64(widget._imgPath)
-//          'url':
-//              'https://cn.bing.com/th?id=OIP.eY74-PmsXafwG2VJ9Qv8qQHaHU&pid=Api&rs=1'
-        },
-        options: Options(
-            contentType:
-                ContentType.parse("application/x-www-form-urlencoded")));
-  }
+  //存储结果（包括图片、识别结果）
+  Future saveOcrResult(DBOcrHistoryBean bean) async {
+    var fileBytes = File(bean.imgPath).readAsBytesSync();
+    //如果是ios的tmp文件夹，则要复制图片到rootDir下
+    if (isIOSTmpDir(bean.imgPath)) {
+      String path = '$rootDir/${getTimestamp()}.jpg';
+      await saveFile(path, fileBytes);
+      bean.imgPath = path;
+    }
 
-  img2Base64(String path) {
-    ImageUtils.Image image =
-        ImageUtils.decodeImage(File(path).readAsBytesSync());
-    ImageUtils.Image thumbnail = ImageUtils.copyResize(image, width: 400);
-    List<int> imageBytes = ImageUtils.encodeJpg(thumbnail);
-
-    //压缩过的图片当成缩略图存储下来
-    File('$path$image_suffix')
-      ..writeAsBytes(imageBytes).then((file) {
-        file.create();
+    //存储缩略图
+    Future.delayed(Duration(seconds: 1), () async {
+      ImageUtils.compressImage(bean.imgPath, minWidth: 150).then((file) {
+        saveFile("${bean.imgPath}$image_thumb_suffix", file);
       });
-    LogUtils.i(
-        "image before length: ${image.length}, after length: ${thumbnail.length}");
-    return base64Encode(imageBytes);
-  }
+    });
 
-  Future storeOcrResult(DBOcrHistoryBean bean) async {
-    DataBaseHelper.getInstance().getDatabase().insert(
-        DataBaseHelper.table_ocr_history, {
-      IMG_PATH: bean.imgPath,
+    DataBaseHelper.getInstance()
+        .getDatabase()
+        .insert(DataBaseHelper.table_ocr_history, {
+      IMG_PATH: convertPath(true, bean.imgPath),
       RESULT: bean.result,
+      JSON_RESULT: bean.jsonResult,
+      JSON_TYPE: bean.jsonType,
+      SIZE_FOR_OCR: "${bean.widthForOcr},${bean.heightForOcr}",
       DATE_TIME: bean.dateTime
     });
   }
@@ -193,13 +194,8 @@ class _OcrPageState extends State<OcrPage> {
                 SpinKitCircle(
                   color: Colors.grey,
                 ),
-                Padding(
-                  padding: EdgeInsets.only(left: 20),
-                ),
-                Text(
-                  "加载中...",
-                  style: TextStyle(fontSize: 18),
-                ),
+                Padding(padding: EdgeInsets.only(left: 20)),
+                Text("加载中...", style: TextStyle(fontSize: 18)),
               ],
             ),
           ));

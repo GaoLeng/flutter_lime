@@ -1,8 +1,9 @@
+import 'package:flutter_lime/utils/const.dart';
 import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DataBaseHelper {
-  static const int version = 2;
+  static const int version = 1;
   static const String table_ocr_history = "OCR_HISTORY";
   static DataBaseHelper _helper;
 
@@ -24,10 +25,13 @@ class DataBaseHelper {
           onCreate: (db, version) {
         LogUtils.i("currVersion: $version");
         db.execute("""CREATE TABLE $table_ocr_history (
-                     "ID" integer PRIMARY KEY AUTOINCREMENT,
-                     "IMG_PATH" text(500,2),
-                     "RESULT" text,
-                     "DATE_TIME" text
+                     $ID integer PRIMARY KEY AUTOINCREMENT,
+                     $IMG_PATH text,
+                     $RESULT text,
+                     $JSON_TYPE integer,
+                     $JSON_RESULT text,
+                     $SIZE_FOR_OCR text,
+                     $DATE_TIME text
                       );""");
       });
     }

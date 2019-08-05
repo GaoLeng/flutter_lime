@@ -36,7 +36,7 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    var color = materialColors[currThemeColorIndex];
+    var color = themeColors[currThemeColorIndex];
     var widget = Material(
         color: Colors.grey[100],
         child: Column(children: <Widget>[
@@ -85,19 +85,6 @@ class _SplashPageState extends State<SplashPage> {
     return widget;
   }
 
-  void getToken() {
-    Future getToken() async {
-      return await HttpUtils.getInstance()
-          .post(baidu_access_token, queryParameters: baidu_access_token_params);
-    }
-
-    getToken().then((value) {
-      Map<String, dynamic> map = jsonDecode(value.toString());
-      HttpUtils.accessToken = map["access_token"];
-      LogUtils.i("accessToken: ${HttpUtils.accessToken}");
-    });
-  }
-
   //参数初始化方法，由于主题比较特殊，放在main中初始化
   void init() async {
     getToken();
@@ -105,6 +92,23 @@ class _SplashPageState extends State<SplashPage> {
     getBySP([settings_camera]).then((kv) {
       var isAutoCamera = kv[settings_camera];
       if (isAutoCamera != null) currIsAutoCamera = isAutoCamera;
+    });
+
+    Future.delayed(Duration(milliseconds: 500), () {
+      screenSize = MediaQuery.of(context).size;
+      sizeForOcr = screenSize;
+    });
+
+    getRootDir().then((root) {
+      rootDir = root;
+    });
+  }
+
+  void getToken() {
+    HttpUtils.getAccessTokenOfBaidu().then((value) {
+      Map<String, dynamic> map = jsonDecode(value.toString());
+      HttpUtils.accessToken = map["access_token"];
+      LogUtils.i("accessToken: ${HttpUtils.accessToken}");
     });
   }
 }

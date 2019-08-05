@@ -5,7 +5,7 @@ import 'package:flutter_material_color_picker/flutter_material_color_picker.dart
 
 //配置状态实体
 class ThemeConfigInfoBean {
-  MaterialColor theme = materialColors[currThemeColorIndex];
+  MaterialColor theme = themeColors[currThemeColorIndex];
 }
 
 class ThemeConfigModel extends ThemeConfigInfoBean with ChangeNotifier {

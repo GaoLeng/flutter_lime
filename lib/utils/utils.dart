@@ -27,14 +27,6 @@ String getDateTime() {
   return dateTime.substring(0, dateTime.lastIndexOf("."));
 }
 
-String bool2Value(bool value) {
-  return value ? "1" : "0";
-}
-
-bool value2Bool(String value) {
-  return value == "1";
-}
-
 shareText(text) {
   Share.share(text);
 }
@@ -62,4 +54,29 @@ Future<Map<String, dynamic>> getBySP(List<String> keys) async {
     });
     return kv;
   });
+}
+
+//是否有新版本
+bool checkVersionIsUpdate(String currVersion, String newVersion) {
+  var currVersionArray = currVersion.split(".").map((v) => toInt(v)).toList();
+  var newVersionArray = newVersion.split(".").map((v) => toInt(v)).toList();
+
+  //1.0.0   0.0.1
+  return checkSubVersion(0, currVersionArray, newVersionArray);
+}
+
+bool checkSubVersion(index, currVersionArray, newVersionArray) {
+  if (index >= 2) return false;
+
+  if (currVersionArray[index] > newVersionArray[index]) {
+    return false;
+  } else if (currVersionArray[index] == newVersionArray[index]) {
+    return checkSubVersion(++index, currVersionArray, newVersionArray);
+  } else {
+    return true;
+  }
+}
+
+int toInt(String num) {
+  return int.parse(num);
 }

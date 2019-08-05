@@ -23,18 +23,23 @@ dependencies:
   flutter_spinkit: ^3.1.0
   #图片压缩
   image: 2.1.4
+  flutter_image_compress: ^0.6.3
+  flutter_native_image:
+    git: https://github.com/btastic/flutter_native_image.git
   #路径获取
   path_provider: ^0.4.1
   #网络请求库
   dio: 2.1.13
   #toast
-  fluttertoast: ^3.1.0
+  fluttertoast: ^3.0.0 #3.1.0在ios上弹出新页面后，无法再显示toast
+  #  fluttertoast:
+  #    git: https://github.com/PonnamKarthik/FlutterToast.git
   #sp
   shared_preferences: ^0.5.3
   #数据库
   sqflite: ^1.1.6
   #语音库
-  tts: ^1.0.2
+  flutter_tts: ^0.2.6
   #打开其他 软件
   url_launcher: ^5.1.1
   #加密算法 如sha256
@@ -49,7 +54,13 @@ dependencies:
   provide: ^1.0.2
   #返回键监听
   back_button_interceptor: ^4.0.6
-
+  #图片拖动缩放
+  flutter_drag_scale:
+    git: https://github.com/LiuC520/flutter_drag_scale.git
+  #获取相册图片
+  #  photo_provider: ^0.1.0
+  #下拉刷新、上拉加载
+  flutter_easyrefresh: ^2.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -58,6 +69,10 @@ flutter:
   uses-material-design: true
 
   assets:
-    - images/splash_bg.png
     - images/logo.png
-    - images/palceholder.png
+    - images/placeholder.png
+
+  fonts:
+    - family: iconfont
+      fonts:
+        - asset: fonts/iconfont.ttf

@@ -1,11 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter_lime/beans/db_ocr_history_bean.dart';
 import 'package:flutter_lime/db/database_helper.dart';
 import 'package:flutter_lime/pages/img_view_page.dart';
 import 'package:flutter_lime/utils/const.dart';
+import 'package:flutter_lime/utils/dialog_utils.dart';
 import 'package:flutter_lime/utils/log_utils.dart';
 
 import '../ocr_result_page.dart';
@@ -18,25 +21,47 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   List<DBOcrHistoryBean> histories;
+  EasyRefreshController _refreshController;
+  bool _firstRefresh = true;
 
-  _HistoryPageState() {}
+  var refreshText = "下拉刷新";
+  var refreshReadyText = "松开刷新";
+  var refreshingText = "正在刷新...";
+  var refreshedText = "刷新成功";
+  var refreshFailedText = "刷新失败";
+  var infoText = "更新于 %T";
+  var infoColor = themeColors[currThemeColorIndex];
+
+  var loadText = "上拉加载";
+  var loadReadyText = "松开加载";
+  var loadingText = "正在加载...";
+  var loadedText = "加载成功";
+  var loadFailedText = "加载失败";
+  var noMoreText = "已经到底了";
 
   @override
   void initState() {
     super.initState();
     queryHistory();
     LogUtils.i("history page initState.");
+    _refreshController = EasyRefreshController();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    return EasyRefresh(
+//      emptyWidget: Text("暂无数据"),
+//      firstRefresh: _firstRefresh,
+      header: _generateRefreshHeader(),
+      footer: _generateRefreshFooter(),
+      controller: _refreshController,
+      onRefresh: _onRefresh,
       child: ListView.separated(
         itemCount: histories == null ? 0 : histories.length,
         itemBuilder: ((context, index) {
           return Dismissible(
             key: Key(histories[index].toString()),
-            child: generateItem(histories[index], index),
+            child: _generateItem(histories[index], index),
             onDismissed: (direction) {
               histories.removeAt(index);
             },
@@ -49,23 +74,10 @@ class _HistoryPageState extends State<HistoryPage> {
               )),
             ),
             confirmDismiss: (DismissDirection direction) async {
-              return await showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text("提示"),
-                      content: const Text("确认要删除此记录吗？"),
-                      actions: <Widget>[
-                        FlatButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text("删除")),
-                        FlatButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text("取消"),
-                        )
-                      ],
-                    );
-                  });
+              return await DialogUtils.showAlertDialog(context, "确定要删除此记录吗？", [
+                DialogAction("删除", true),
+                DialogAction("取消", false),
+              ]);
             },
           );
         }),
@@ -76,7 +88,35 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 
-  Widget generateItem(DBOcrHistoryBean bean, int index) {
+  _generateRefreshHeader() {
+    return ClassicalHeader(
+      enableHapticFeedback: false,
+      refreshText: refreshText,
+      refreshReadyText: refreshReadyText,
+      refreshingText: refreshingText,
+      refreshedText: refreshedText,
+      refreshFailedText: refreshFailedText,
+      noMoreText: noMoreText,
+      infoText: infoText,
+      infoColor: infoColor,
+    );
+  }
+
+  _generateRefreshFooter() {
+    return ClassicalFooter(
+      enableHapticFeedback: false,
+      loadText: loadText,
+      loadReadyText: loadReadyText,
+      loadingText: loadingText,
+      loadedText: loadedText,
+      loadFailedText: loadFailedText,
+      noMoreText: noMoreText,
+      infoText: infoText,
+      infoColor: infoColor,
+    );
+  }
+
+  Widget _generateItem(DBOcrHistoryBean bean, int index) {
     return InkWell(
       onTap: () => _onItemClick(index),
       child: Container(
@@ -94,8 +134,8 @@ class _HistoryPageState extends State<HistoryPage> {
                 child: FadeInImage(
                   key: Key(bean.imgPath),
                   fadeInDuration: Duration(milliseconds: 100),
-                  placeholder: AssetImage("images/palceholder.png"),
-                  image: FileImage(File(bean.imgPath + image_suffix)),
+                  placeholder: AssetImage("images/placeholder.png"),
+                  image: FileImage(File(bean.imgPath + image_thumb_suffix)),
                   width: 72,
                   height: 72,
                   fit: BoxFit.cover,
@@ -143,15 +183,25 @@ class _HistoryPageState extends State<HistoryPage> {
         .getDatabase()
         .query(DataBaseHelper.table_ocr_history, orderBy: "ID desc")
         .then((value) {
-      // LogUtils.i("queryHistory: $value");
+      LogUtils.i("queryHistory: $value");
+      _firstRefresh = false;
+      _refreshController.resetLoadState();
+      _refreshController.finishRefresh(success: true);
       histories = List();
       value.forEach((row) {
         var bean = DBOcrHistoryBean.fromDb(row);
         histories.add(bean);
+//        LogUtils.i("queryHistory: ${bean.imgPath}");
         // precacheImage(FileImage(File(bean.imgPath)), context);
       });
       if (histories.length == 0) return;
       setState(() {});
     });
+  }
+
+  Future<void> _onRefresh() async {
+    LogUtils.i("_onRefresh: ");
+
+    queryHistory();
   }
 }

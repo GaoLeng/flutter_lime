@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lime/beans/theme_config_bean.dart';
 import 'package:flutter_lime/utils/const.dart';
+import 'package:flutter_lime/utils/dialog_utils.dart';
+import 'package:flutter_lime/utils/file_utils.dart';
+import 'package:flutter_lime/utils/http_utils.dart';
+import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/store.dart';
 import 'package:flutter_lime/utils/utils.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
+import 'package:package_info/package_info.dart';
 
 //设置页面
 class SettingsPage extends StatefulWidget {
   @override
-  _SettingsPageState createState() => _SettingsPageState();
+  SettingsPageState createState() => SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class SettingsPageState extends State<SettingsPage> {
   List<SettingsBean> _settingsItems;
 
   @override
@@ -19,35 +24,32 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
 
     getBySP([settings_camera, settings_trans_option, settings_theme])
-        .then((kv) {
-//      PackageInfo packageInfo = await PackageInfo.fromPlatform();
-          var version = "";
+        .then((kv) async {
+      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      var version = packageInfo.version;
 
-          _settingsItems = [
-            SettingsBean(settings_camera, SettingsType.switch_,
-                desc: "打开软件时自动进入拍照页面", value: currIsAutoCamera),
-            SettingsBean(settings_trans_option, SettingsType.click,
-                desc: "desc"),
-            SettingsBean(settings_theme, SettingsType.color,
-                desc: "选择MD颜色", value: currThemeColorIndex),
-            SettingsBean(settings_clear_cache, SettingsType.click,
-                desc: "40.45 M"),
-            SettingsBean(settings_update_log, SettingsType.click,
-                desc: "查看历次更新的功能"),
-            SettingsBean(settings_donation, SettingsType.click,
-                desc: "您的支持是我更新的动力"),
-            SettingsBean(settings_score, SettingsType.click,
-                desc: "好用的话请给五颗⭐️哦"),
-            SettingsBean(settings_feedback, SettingsType.click,
-                desc: "提出您的意见和建议"),
-            SettingsBean(settings_check_update, SettingsType.click,
-                desc: "当前版本 v$version"),
-            SettingsBean(settings_about, SettingsType.click),
-          ];
-          setState(() {});
-        })
-        .then((value) {})
-        .then((value) {});
+      var cacheSize = await getCacheSize();
+
+      _settingsItems = [
+        SettingsBean(settings_camera, SettingsType.switch_,
+            desc: "打开软件时自动进入拍照页面", value: currIsAutoCamera),
+        SettingsBean(settings_trans_option, SettingsType.click, desc: "desc"),
+        SettingsBean(settings_theme, SettingsType.color,
+            desc: "选择 Meterial Design 风格的主题", value: currThemeColorIndex),
+        SettingsBean(settings_clear_cache, SettingsType.click,
+            desc: _getClearCacheDesc(cacheSize)),
+        SettingsBean(settings_check_update, SettingsType.click,
+            desc: "当前版本 v$version", value: version),
+        SettingsBean(settings_update_log, SettingsType.click,
+            desc: "查看历次更新的功能"),
+        SettingsBean(settings_donation, SettingsType.click,
+            desc: "您的支持是我更新的动力"),
+        SettingsBean(settings_score, SettingsType.click, desc: "好用的话请给五颗⭐️哦"),
+        SettingsBean(settings_feedback, SettingsType.click, desc: "提出您的意见和建议"),
+        SettingsBean(settings_about, SettingsType.click),
+      ];
+      setState(() {});
+    });
   }
 
   @override
@@ -92,7 +94,7 @@ class _SettingsPageState extends State<SettingsPage> {
           width: 46,
           height: 24,
           decoration: BoxDecoration(
-              shape: BoxShape.circle, color: materialColors[bean.value]),
+              shape: BoxShape.circle, color: themeColors[bean.value]),
         ));
         break;
       case SettingsType.switch_:
@@ -134,6 +136,7 @@ class _SettingsPageState extends State<SettingsPage> {
       case settings_donation:
         break;
       case settings_check_update:
+        HttpUtils.checkForUpdate(bean.value);
         break;
       case settings_update_log:
         break;
@@ -142,6 +145,7 @@ class _SettingsPageState extends State<SettingsPage> {
       case settings_feedback:
         break;
       case settings_clear_cache:
+        _showClearCacheDialog(bean);
         break;
       case settings_trans_option:
         break;
@@ -156,17 +160,41 @@ class _SettingsPageState extends State<SettingsPage> {
           return AlertDialog(
               title: Text("选择主题色"),
               content: MaterialColorPicker(
+                  colors: themeColors,
                   allowShades: false,
                   onColorChange: (Color color) {},
                   onMainColorChange: (ColorSwatch color) {
                     Store.value<ThemeConfigModel>(context).setTheme(color);
                     Navigator.pop(context);
                     currThemeColorIndex =
-                        bean.value = materialColors.indexOf(color);
+                        bean.value = themeColors.indexOf(color);
                     saveBySP(bean.key, bean.value);
                   },
-                  selectedColor: materialColors[currThemeColorIndex]));
+                  selectedColor: themeColors[currThemeColorIndex]));
         });
+  }
+
+  //清除缓存dialog
+  void _showClearCacheDialog(SettingsBean bean) {
+    DialogUtils.showAlertDialog(context, "确认要清除缓存吗？", [
+      DialogAction("清除", true),
+      DialogAction("取消", false),
+    ]).then((isClear) {
+      if (!isClear) return null;
+      return clearCache();
+    }).then((isSuccess) {
+      if (isSuccess == null) return null;
+      showMsg("清除缓存${isSuccess ? "成功" : "失败"}");
+      return getCacheSize();
+    }).then((size) {
+      if (size == null) return;
+      bean.desc = _getClearCacheDesc(size);
+      setState(() {});
+    });
+  }
+
+  String _getClearCacheDesc(cacheSize) {
+    return "缓存已占用 $cacheSize";
   }
 }
 

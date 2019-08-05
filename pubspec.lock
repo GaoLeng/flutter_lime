@@ -99,6 +99,29 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_drag_scale:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "8a9fbd918bc0333216c7704342246b498c05a419"
+      url: "https://github.com/LiuC520/flutter_drag_scale.git"
+    source: git
+    version: "0.0.1"
+  flutter_easyrefresh:
+    dependency: "direct main"
+    description:
+      name: flutter_easyrefresh
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.0.0"
+  flutter_image_compress:
+    dependency: "direct main"
+    description:
+      name: flutter_image_compress
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.6.3"
   flutter_material_color_picker:
     dependency: "direct main"
     description:
@@ -106,6 +129,15 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.0.3"
+  flutter_native_image:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "426996b810c8ff3899a6109b65bdab143652e875"
+      url: "https://github.com/btastic/flutter_native_image.git"
+    source: git
+    version: "0.0.4"
   flutter_spinkit:
     dependency: "direct main"
     description:
@@ -118,6 +150,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_tts:
+    dependency: "direct main"
+    description:
+      name: flutter_tts
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.2.6"
   fluttertoast:
     dependency: "direct main"
     description:
@@ -277,13 +316,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.2.5"
-  tts:
-    dependency: "direct main"
-    description:
-      name: tts
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.0.2"
   typed_data:
     dependency: transitive
     description:

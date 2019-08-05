@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_lime/utils/const.dart';
-import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/utils.dart';
 
@@ -105,7 +104,7 @@ class _CameraPageState extends State<CameraPage> {
       child: IconButton(
         onPressed: function,
         iconSize: iconSize,
-        highlightColor: materialColors[currThemeColorIndex],
+        highlightColor: themeColors[currThemeColorIndex],
         color: Colors.white,
         icon: Icon(icon),
       ),
@@ -143,8 +142,8 @@ class _CameraPageState extends State<CameraPage> {
       LogUtils.i('Error: select a camera first.');
       return null;
     }
-    var dirPath = await getRootDir();
-    final String filePath = '$dirPath/${getTimestamp()}.jpg';
+
+    final String filePath = '$rootDir/${getTimestamp()}.jpg';
 
     if (_cameraController.value.isTakingPicture) {
       // A capture is already pending, do nothing.
@@ -153,6 +152,7 @@ class _CameraPageState extends State<CameraPage> {
 
     try {
       await _cameraController.takePicture(filePath);
+      LogUtils.i("takePicture path: $filePath");
     } on CameraException catch (e) {
       LogUtils.e(e.toString());
       return null;
