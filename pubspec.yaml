@@ -61,6 +61,8 @@ dependencies:
   #  photo_provider: ^0.1.0
   #下拉刷新、上拉加载
   flutter_easyrefresh: ^2.0.0
+  #官方webview
+  webview_flutter: ^0.3.10+4
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -71,6 +73,7 @@ flutter:
   assets:
     - images/logo.png
     - images/placeholder.png
+    - images/wechat_appreciates.jpg
 
   fonts:
     - family: iconfont

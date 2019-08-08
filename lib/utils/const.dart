@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
+import 'package:package_info/package_info.dart';
 
 //--------------------配置------------------------
 const bool is_debug = true;
@@ -16,11 +17,25 @@ List<CameraDescription> currAvailableCameras = [];
 Size screenSize; //屏幕尺寸，dp单位
 String rootDir;
 Size sizeForOcr; //ocr识别时的尺寸，方便后面等比例画线框
+PackageInfo currPackageInfo; //当前app包名、版本等信息
 
 //--------------------路由------------------------
 const String page_main = "page_main";
 const String page_settings = "page_settings";
 const String page_camera = "page_camera";
+
+//--------------------版本更新 简书------------------------
+const String check_for_update_url = "https://www.jianshu.com/p/47c26864e855";
+final String versionStart =
+    Platform.isAndroid ? "lime-version-android#" : "lime-version-ios#";
+final String versionEnd =
+    Platform.isAndroid ? "#lime-version-android" : "#lime-version-ios";
+
+//--------------------反馈建议 TypeForm------------------------
+const String type_form_token_url =
+    "https://gaoleng.typeform.com/app/form/result/token/MCxvZN/touch";
+const String type_form_submit_url =
+    "https://gaoleng.typeform.com/app/form/submit/MCxvZN";
 
 //--------------------有道翻译------------------------
 const String youdao_translate_url = "https://openapi.youdao.com/api";
@@ -65,5 +80,7 @@ const String settings_trans_option = "翻译选项";
 //----------------------其他---------------------------
 const String image_thumb_suffix = "_thumbnail.jpg"; //ocr缩略图文件名后缀
 //lime-version-android#1.0.1#lime-version-android
-final String versionStart = Platform.isAndroid ? "lime-version-android#" : "lime-version-ios#";
-final String versionEnd = Platform.isAndroid ? "#lime-version-android" : "#lime-version-ios";
+
+const String alipay_red_packet_code = "675662203";
+
+const String ios_app_id = ""; //ios版app id

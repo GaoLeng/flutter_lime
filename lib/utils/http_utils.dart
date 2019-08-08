@@ -29,22 +29,53 @@ class HttpUtils {
         .post(baidu_access_token, queryParameters: baidu_access_token_params);
   }
 
-  static Future<void> checkForUpdate(String currVersion) async {
-    await _getInstance()
-        .get("https://www.jianshu.com/p/47c26864e855")
-        .then((value) {
+  //检查更新-简书
+  static Future<void> checkForUpdate() async {
+    await _getInstance().get(check_for_update_url).then((value) {
       var res = value.toString();
       var version = res
           .substring(res.lastIndexOf(versionStart), res.lastIndexOf(versionEnd))
           .replaceAll(versionStart, "");
       LogUtils.i("checkForUpdate version: $version");
 
-      if (checkVersionIsUpdate(currVersion, version)) {
+      if (checkVersionIsUpdate(currPackageInfo.version, version)) {
         showMsg("有新的版本更新了~  v$version");
       } else {
         showMsg("已经是最新的版本了~");
       }
     });
+  }
+
+  //反馈建议token-TypeForm
+  static Future<Response> getTokenOfTypeForm() async {
+    return await _getInstance().post(type_form_token_url,
+        options: Options(headers: {
+          "Accept": "application/json",
+          "User-Agent":
+              "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Mobile Safari/537.36"
+        }, contentType: ContentType.parse("application/x-www-form-urlencoded")),
+        queryParameters: {
+          "Origin": "https://gaoleng.typeform.com",
+          "Referer": "https://gaoleng.typeform.com/to/MCxvZN",
+        });
+  }
+
+  static Future<Response> submitFeedBackByTypeForm(
+      answer1, answer2, token, landedAt) async {
+    LogUtils.i(
+        "answer1:$answer1, answer2: $answer2, token: $token, landedAt: $landedAt");
+    return await _getInstance().post(
+      type_form_submit_url,
+      options: Options(
+          contentType: ContentType.parse("application/x-www-form-urlencoded")),
+      data: FormData.from({
+        "form[textarea:FyMGD59M3dKF]": answer1,
+        "form[textfield:YDxOa9qNANrx]": answer2,
+        "form[token]": token,
+        "form[landed_at]": landedAt,
+        "form[language]": "ch",
+      }),
+    );
   }
 
   //ocr-百度

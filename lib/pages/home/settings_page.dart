@@ -1,14 +1,22 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_lime/beans/theme_config_bean.dart';
 import 'package:flutter_lime/utils/const.dart';
 import 'package:flutter_lime/utils/dialog_utils.dart';
+import 'package:flutter_lime/utils/donation_utils.dart';
 import 'package:flutter_lime/utils/file_utils.dart';
 import 'package:flutter_lime/utils/http_utils.dart';
 import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/store.dart';
 import 'package:flutter_lime/utils/utils.dart';
+import 'package:flutter_lime/widgets/status_view.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 import 'package:package_info/package_info.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../feedback_page.dart';
+import '../web_view_page.dart';
 
 //设置页面
 class SettingsPage extends StatefulWidget {
@@ -25,9 +33,6 @@ class SettingsPageState extends State<SettingsPage> {
 
     getBySP([settings_camera, settings_trans_option, settings_theme])
         .then((kv) async {
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      var version = packageInfo.version;
-
       var cacheSize = await getCacheSize();
 
       _settingsItems = [
@@ -39,7 +44,7 @@ class SettingsPageState extends State<SettingsPage> {
         SettingsBean(settings_clear_cache, SettingsType.click,
             desc: _getClearCacheDesc(cacheSize)),
         SettingsBean(settings_check_update, SettingsType.click,
-            desc: "当前版本 v$version", value: version),
+            desc: "当前版本 v${currPackageInfo.version}"),
         SettingsBean(settings_update_log, SettingsType.click,
             desc: "查看历次更新的功能"),
         SettingsBean(settings_donation, SettingsType.click,
@@ -59,7 +64,7 @@ class SettingsPageState extends State<SettingsPage> {
 
   Widget _generateBody() {
     if (_settingsItems == null || _settingsItems.length == 0) {
-      return Text("暂无数据");
+      return StatusView(Status.LOADING);
     }
     return ListView.separated(
       itemCount: _settingsItems.length,
@@ -134,15 +139,19 @@ class SettingsPageState extends State<SettingsPage> {
       case settings_camera:
         break;
       case settings_donation:
+        _showDonationDialog();
         break;
       case settings_check_update:
-        HttpUtils.checkForUpdate(bean.value);
+        HttpUtils.checkForUpdate();
         break;
       case settings_update_log:
+        _openUpdateLogPage();
         break;
       case settings_score:
+        _openScorePage();
         break;
       case settings_feedback:
+        _openFeedbackPage();
         break;
       case settings_clear_cache:
         _showClearCacheDialog(bean);
@@ -176,9 +185,9 @@ class SettingsPageState extends State<SettingsPage> {
 
   //清除缓存dialog
   void _showClearCacheDialog(SettingsBean bean) {
-    DialogUtils.showAlertDialog(context, "确认要清除缓存吗？", [
-      DialogAction("清除", true),
-      DialogAction("取消", false),
+    DialogUtils.showAlertDialog(context, Text("确认要清除缓存吗？"), [
+      AlertDialogAction("清除", () => Navigator.pop(context, true)),
+      AlertDialogAction("取消", () => Navigator.pop(context, false)),
     ]).then((isClear) {
       if (!isClear) return null;
       return clearCache();
@@ -195,6 +204,61 @@ class SettingsPageState extends State<SettingsPage> {
 
   String _getClearCacheDesc(cacheSize) {
     return "缓存已占用 $cacheSize";
+  }
+
+  void _showDonationDialog() {
+    DialogUtils.showOptionDialog(context, "请我喝咖啡", [
+      AlertDialogAction("支付宝转账", () => DonationUtils.openAlipayTransfer()),
+      AlertDialogAction(
+          "微信赞赏码", () => DonationUtils.openWechatAppreciates(context)),
+      AlertDialogAction(
+          "支付宝红包搜索码", () => DonationUtils.openAlipayRedPacketCode(context)),
+    ]);
+  }
+
+  void _openUpdateLogPage() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return WebViewPage("更新日志", check_for_update_url);
+    }));
+  }
+
+  void _openFeedbackPage() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return FeedbackPage();
+    }));
+  }
+
+  Future _openScorePage() async {
+    if (Platform.isAndroid) {
+      //各大市场url scheme
+      final markets = [
+        //通用
+        "market://details?id=${currPackageInfo.packageName}",
+        //小米
+        "mimarket://details?id=${currPackageInfo.packageName}",
+        //三星
+        "samsungapps://ProductDetail/${currPackageInfo.packageName}",
+        //华为
+        "appmarket://details?id=${currPackageInfo.packageName}",
+        //oppo
+        "oppomarket://details?packagename=${currPackageInfo.packageName}",
+        //vivo
+        "vivomarket://details?id=${currPackageInfo.packageName}"
+      ];
+
+      for (var market in markets) {
+        if (await canLaunch(market)) {
+          launch(market);
+          return;
+        } else if (markets.indexOf(market) == markets.length - 1) {
+          //如果都不匹配
+          showMsg("没有找到应用商店");
+        }
+      }
+    } else if (Platform.isIOS) {
+      launch(
+          "itms-apps://itunes.apple.com/app/id$ios_app_id?action=write-review");
+    }
   }
 }
 

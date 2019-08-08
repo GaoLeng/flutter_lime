@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_lime/beans/db_ocr_history_bean.dart';
@@ -8,7 +9,6 @@ import 'package:flutter_lime/utils/const.dart';
 import 'package:flutter_lime/utils/tts_utils.dart';
 import 'package:flutter_lime/utils/utils.dart';
 import 'package:flutter_lime/widgets/image_view.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 
 //OCR识别结果页
 class OcrResultPage extends StatefulWidget {
@@ -36,58 +36,66 @@ class _OcrResultPageState extends State<OcrResultPage> {
       }
     });
     _controller = TextEditingController(text: results);
+    BackButtonInterceptor.add(onBackPress);
+  }
+
+  @override
+  void dispose() {
+    BackButtonInterceptor.remove(onBackPress);
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-        child: Scaffold(
-            appBar: AppBar(
-              title: Text("识别结果"),
-            ),
-            body: Column(
-              children: <Widget>[
-                Expanded(
-                  flex: 1,
-                  child: TextField(
-                    decoration: InputDecoration(
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.all(8)),
-                    keyboardType: TextInputType.text,
-                    style: TextStyle(),
-                    maxLines: null,
-                    controller: _controller,
-                  ),
-                ),
-                _generateCheckView(),
-                SafeArea(
-                    child: Row(
-                      children: <Widget>[
-                        Padding(padding: EdgeInsets.only(left: 4)),
-                        generateIconButtonWithExpanded(
-                            Icons.content_copy, "复制", _onCopyClicked),
-                        generateIconButtonWithExpanded(
-                            Icons.share, "分享", _onShareClicked),
-                        generateIconButtonWithExpanded(
-                            Icons.volume_up, "朗读", _onSpeakClicked),
-                        generateIconButtonWithExpanded(
-                            Icons.g_translate, "翻译", _onTranslateClicked),
-                        generateIconButtonWithExpanded(
-                            Icons.spellcheck, "校对", _onCheckClicked,
-                            color: _isChecking
-                                ? themeColors[currThemeColorIndex]
-                                : null),
-                        Padding(padding: EdgeInsets.only(left: 4)),
-                      ],
-                    ))
-              ],
-            )),
-        onWillPop: onWillPop);
+    final widgets = <Widget>[];
+    widgets.add(Expanded(flex: 1, child: _generateTextInput()));
+    if (_isChecking) {
+      widgets.add(Divider(height: 1));
+      widgets.add(Expanded(flex: 1, child: _generateCheckView()));
+    }
+    widgets.add(Divider(height: 1));
+    widgets.add(_generateBottomBtns());
+    return Scaffold(
+        appBar: AppBar(
+          title: Text("识别结果"),
+        ),
+        body: Column(children: widgets));
+  }
+
+  //生成文本框
+  Widget _generateTextInput() {
+    return TextField(
+      decoration: InputDecoration(
+          border: InputBorder.none, contentPadding: EdgeInsets.all(8)),
+      keyboardType: TextInputType.text,
+      style: TextStyle(),
+      maxLines: null,
+      controller: _controller,
+    );
+  }
+
+  //生成底部按钮组
+  Widget _generateBottomBtns() {
+    return SafeArea(
+        child: Row(
+      children: <Widget>[
+        Padding(padding: EdgeInsets.only(left: 4)),
+        generateIconButtonWithExpanded(
+            Icons.content_copy, "复制", _onCopyClicked),
+        generateIconButtonWithExpanded(Icons.share, "分享", _onShareClicked),
+        generateIconButtonWithExpanded(Icons.volume_up, "朗读", _onSpeakClicked),
+        generateIconButtonWithExpanded(
+            Icons.g_translate, "翻译", _onTranslateClicked),
+        generateIconButtonWithExpanded(Icons.spellcheck, "校对", _onCheckClicked,
+            color: _isChecking ? themeColors[currThemeColorIndex] : null),
+        Padding(padding: EdgeInsets.only(left: 4)),
+      ],
+    ));
   }
 
   //生成底部按钮
-  Widget generateIconButtonWithExpanded(IconData icon, String text,
-      VoidCallback onTap,
+  Widget generateIconButtonWithExpanded(
+      IconData icon, String text, VoidCallback onTap,
       {VoidCallback onLongPress, color}) {
     if (color == null) color = Colors.grey[700];
     return Expanded(
@@ -114,17 +122,12 @@ class _OcrResultPageState extends State<OcrResultPage> {
   }
 
   Widget _generateCheckView() {
-    return _isChecking
-        ? Expanded(
-      flex: 1,
-      child: ListView.builder(
-        itemCount: widget._beans.length,
-        itemBuilder: (context, index) {
-          return ImageView(widget._beans[index]);
-        },
-      ),
-    )
-        : Divider(height: 1);
+    return ListView.builder(
+      itemCount: widget._beans.length,
+      itemBuilder: (context, index) {
+        return ImageView(widget._beans[index]);
+      },
+    );
   }
 
   void _onCopyClicked() {
@@ -152,14 +155,12 @@ class _OcrResultPageState extends State<OcrResultPage> {
     });
   }
 
-  Future<bool> onWillPop() {
-    var shouldPop;
+  bool onBackPress(bool stopDefaultButtonEvent) {
     if (_isChecking) {
       _onCheckClicked();
-      shouldPop = false;
+      return true;
     } else {
-      shouldPop = true;
+      return false;
     }
-    return Future.value(shouldPop);
   }
 }

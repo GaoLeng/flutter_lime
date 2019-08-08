@@ -7,6 +7,7 @@ import 'package:flutter_lime/beans/baidu_ocr_result_bean.dart';
 import 'package:flutter_lime/beans/ocr_result_bean.dart';
 import 'package:flutter_lime/db/database_helper.dart';
 import 'package:flutter_lime/utils/const.dart';
+import 'package:flutter_lime/utils/dialog_utils.dart';
 import 'package:flutter_lime/utils/file_utils.dart';
 import 'package:flutter_lime/utils/http_utils.dart';
 import 'package:flutter_lime/utils/image_utils.dart';
@@ -106,7 +107,7 @@ class _OcrPageState extends State<OcrPage> {
       return;
     }
 
-    showLoading();
+    DialogUtils.showLoading(context, content: "正在识别...");
     ocr();
   }
 
@@ -122,7 +123,7 @@ class _OcrPageState extends State<OcrPage> {
       BaiDuOcrResultBean ocrResultBean =
           BaiDuOcrResultBean.fromJson(jsonDecode(resStr));
       if (ocrResultBean.error_code != 0) {
-        dismiss();
+        DialogUtils.dismiss(context);
         showMsg("识别失败，${ocrResultBean.error_msg}");
         return;
       }
@@ -130,7 +131,7 @@ class _OcrPageState extends State<OcrPage> {
       for (OcrResultBean words in ocrResultBean.words_result) {
         buffer.writeln(words.words);
       }
-      dismiss();
+      DialogUtils.dismiss(context);
 
       var bean = DBOcrHistoryBean(
           imgPath: widget._imgPath,
@@ -166,43 +167,6 @@ class _OcrPageState extends State<OcrPage> {
       });
     });
 
-    DataBaseHelper.getInstance()
-        .getDatabase()
-        .insert(DataBaseHelper.table_ocr_history, {
-      IMG_PATH: convertPath(true, bean.imgPath),
-      RESULT: bean.result,
-      JSON_RESULT: bean.jsonResult,
-      JSON_TYPE: bean.jsonType,
-      SIZE_FOR_OCR: "${bean.widthForOcr},${bean.heightForOcr}",
-      DATE_TIME: bean.dateTime
-    });
-  }
-
-  showLoading() {
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) {
-          return Dialog(
-              child: Container(
-            padding: EdgeInsets.only(left: 20),
-            width: 180,
-            height: 80,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                SpinKitCircle(
-                  color: Colors.grey,
-                ),
-                Padding(padding: EdgeInsets.only(left: 20)),
-                Text("加载中...", style: TextStyle(fontSize: 18)),
-              ],
-            ),
-          ));
-        });
-  }
-
-  void dismiss() {
-    Navigator.pop(context);
+    DataBaseHelper.getInstance().insertHistory(bean);
   }
 }

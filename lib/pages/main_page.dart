@@ -3,6 +3,8 @@ import 'package:flutter/src/foundation/diagnostics.dart';
 import 'package:flutter_lime/pages/home/home_page.dart';
 import 'package:flutter_lime/pages/test_page.dart';
 import 'package:flutter_lime/utils/const.dart';
+import 'package:flutter_lime/utils/dialog_utils.dart';
+import 'package:flutter_lime/utils/http_utils.dart';
 import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/utils.dart';
 
@@ -27,6 +29,8 @@ class _MainPageState extends State<MainPage> {
         _openCamera();
       });
     }
+
+    HttpUtils.checkForUpdate();
   }
 
   @override
@@ -73,10 +77,11 @@ class _MainPageState extends State<MainPage> {
   }
 
   void onCameraClicked() {
-//    Navigator.push(context, MaterialPageRoute(builder: (context) {
+    DialogUtils.showLoading(context);
+    //    Navigator.push(context, MaterialPageRoute(builder: (context) {
 //      return TestPage();
 //    }));
-    _openCamera();
+//    _openCamera();
   }
 
   Future _openCamera() async {

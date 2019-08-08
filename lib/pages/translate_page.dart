@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_lime/beans/trans_result_bean.dart';
@@ -42,6 +43,13 @@ class _TranslatePageState extends State<TranslatePage> {
     super.initState();
     _textEditingController = TextEditingController(text: widget._text);
     _translatedEditingController = TextEditingController();
+    BackButtonInterceptor.add(onBackPress);
+  }
+
+  @override
+  void dispose() {
+    BackButtonInterceptor.remove(onBackPress);
+    super.dispose();
   }
 
   @override
@@ -67,7 +75,7 @@ class _TranslatePageState extends State<TranslatePage> {
     if (_hasTranslated) {
       body.children.add(Expanded(flex: 2, child: _generateTranslatedWidget()));
     } else {
-      body.children.add(Expanded(flex: 1, child: _generateTranslatedWidget()));
+//      body.children.add(Expanded(flex: 1, child: _generateTranslatedWidget()));
     }
 
     return Scaffold(appBar: AppBar(title: Text("翻译")), body: body);
@@ -233,4 +241,13 @@ class _TranslatePageState extends State<TranslatePage> {
   }
 
   _onShareClicked() => shareText(_translatedEditingController.text);
+
+  bool onBackPress(bool stopDefaultButtonEvent) {
+    if (_isFullscreen) {
+      _onFullscreenClicked();
+      return true;
+    } else {
+      return false;
+    }
+  }
 }

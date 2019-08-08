@@ -18,6 +18,8 @@
 	<string>需要您的同意，app才能访问麦克风</string>
 	<key>CFBundleName</key>
 	<string>青柠</string>
+	<key>io.flutter.embedded_views_preview</key>
+    <string>YES</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

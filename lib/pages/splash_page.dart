@@ -8,6 +8,7 @@ import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:flutter_lime/utils/store.dart';
 import 'package:flutter_lime/utils/utils.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
+import 'package:package_info/package_info.dart';
 
 //欢迎页
 class SplashPage extends StatefulWidget {
@@ -101,6 +102,10 @@ class _SplashPageState extends State<SplashPage> {
 
     getRootDir().then((root) {
       rootDir = root;
+    });
+
+    PackageInfo.fromPlatform().then((packageInfo) {
+      currPackageInfo = packageInfo;
     });
   }
 

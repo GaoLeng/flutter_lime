@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 //工具类
 
@@ -61,10 +62,10 @@ bool checkVersionIsUpdate(String currVersion, String newVersion) {
   var currVersionArray = currVersion.split(".").map((v) => toInt(v)).toList();
   var newVersionArray = newVersion.split(".").map((v) => toInt(v)).toList();
 
-  //1.0.0   0.0.1
   return checkSubVersion(0, currVersionArray, newVersionArray);
 }
 
+//检查子版本
 bool checkSubVersion(index, currVersionArray, newVersionArray) {
   if (index >= 2) return false;
 

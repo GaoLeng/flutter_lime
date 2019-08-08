@@ -24,14 +24,20 @@ class ImageView extends StatefulWidget {
 class _ImageViewState extends State<ImageView> {
   var _size;
   var _scale;
+  var _imgFile;
+
+  @override
+  void initState() {
+    super.initState();
+    _imgFile = File(widget._bean.imgPath);
+  }
 
   @override
   Widget build(BuildContext context) {
-    var imgFile = File(widget._bean.imgPath);
     return Stack(
       children: <Widget>[
-        Image.file(imgFile),
-        _generateLineRect(imgFile),
+        Image.file(_imgFile),
+        _generateLineRect(_imgFile),
       ],
     );
   }

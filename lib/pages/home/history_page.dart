@@ -74,9 +74,10 @@ class _HistoryPageState extends State<HistoryPage> {
               )),
             ),
             confirmDismiss: (DismissDirection direction) async {
-              return await DialogUtils.showAlertDialog(context, "确定要删除此记录吗？", [
-                DialogAction("删除", true),
-                DialogAction("取消", false),
+              return await DialogUtils.showAlertDialog(
+                  context, Text("确定要删除此记录吗？"), [
+                AlertDialogAction("删除", () => Navigator.pop(context, true)),
+                AlertDialogAction("取消", () => Navigator.pop(context, false)),
               ]);
             },
           );
@@ -179,10 +180,7 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   void queryHistory() {
-    DataBaseHelper.getInstance()
-        .getDatabase()
-        .query(DataBaseHelper.table_ocr_history, orderBy: "ID desc")
-        .then((value) {
+    DataBaseHelper.getInstance().queryHistory().then((value) {
       LogUtils.i("queryHistory: $value");
       _firstRefresh = false;
       _refreshController.resetLoadState();

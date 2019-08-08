@@ -1,4 +1,6 @@
+import 'package:flutter_lime/beans/db_ocr_history_bean.dart';
 import 'package:flutter_lime/utils/const.dart';
+import 'package:flutter_lime/utils/file_utils.dart';
 import 'package:flutter_lime/utils/log_utils.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -41,6 +43,25 @@ class DataBaseHelper {
 
   Database getDatabase() {
     return _db;
+  }
+
+  queryHistory() async {
+    return await DataBaseHelper.getInstance()
+        .getDatabase()
+        .query(DataBaseHelper.table_ocr_history, orderBy: "ID desc");
+  }
+
+  insertHistory(DBOcrHistoryBean bean) {
+    DataBaseHelper.getInstance()
+        .getDatabase()
+        .insert(DataBaseHelper.table_ocr_history, {
+      IMG_PATH: convertPath(true, bean.imgPath),
+      RESULT: bean.result,
+      JSON_RESULT: bean.jsonResult,
+      JSON_TYPE: bean.jsonType,
+      SIZE_FOR_OCR: "${bean.widthForOcr},${bean.heightForOcr}",
+      DATE_TIME: bean.dateTime
+    });
   }
 
   void close() {
