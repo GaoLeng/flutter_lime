@@ -13,7 +13,7 @@ import 'dart:math' as math;
 
 //图片查看器
 class ImageView extends StatefulWidget {
-  DBOcrHistoryBean _bean;
+  final DBOcrHistoryBean _bean;
 
   ImageView(this._bean);
 
@@ -66,9 +66,12 @@ class _ImageViewState extends State<ImageView> {
           minHeight: widget._bean.heightForOcr.toDouble());
       var resultSize = Size(size.width / ocrScale, size.height / ocrScale);
       _scale = screenSize.width / resultSize.width;
-      var scaleHeight = size.height * _scale;
+//      var scaleHeight = size.height * _scale;
 //      LogUtils.i("getImagePropertiesNative scaleHeight: $scaleHeight");
-      _size = Size(screenSize.width, scaleHeight);
+//      _size = Size(screenSize.width, scaleHeight);
+      _size = Size(widget._bean.widthForOcr.toDouble(),
+          widget._bean.heightForOcr.toDouble());
+      LogUtils.i("getImagePropertiesNative _size: $_size");
       setState(() {});
     });
   }

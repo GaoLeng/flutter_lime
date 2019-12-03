@@ -32,10 +32,12 @@ class _WebViewPageState extends State<WebViewPage> {
   Widget build(BuildContext context) {
     final list = <Widget>[];
     if (_isLoading) {
-      list.add(LinearProgressIndicator(
-        value: _progress,
-        backgroundColor: Colors.white,
-      ));
+      list.add(SizedBox(
+          height: 3,
+          child: LinearProgressIndicator(
+            value: _progress,
+            backgroundColor: Colors.white,
+          )));
     }
     list.add(Expanded(
         child: WebView(

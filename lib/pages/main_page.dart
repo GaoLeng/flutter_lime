@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/diagnostics.dart';
-import 'package:flutter_lime/pages/home/home_page.dart';
+import 'package:flutter_lime/pages/home/search_page.dart';
+import 'package:flutter_lime/pages/home_page.dart';
 import 'package:flutter_lime/pages/test_page.dart';
 import 'package:flutter_lime/utils/const.dart';
 import 'package:flutter_lime/utils/dialog_utils.dart';
@@ -48,16 +49,22 @@ class _MainPageState extends State<MainPage> {
 
   //生成标题栏
   Widget generateAppBar() {
-    return AppBar(
-      title: Text(app_name),
-      actions: <Widget>[
-        IconButton(
-          icon: Icon(Icons.settings),
-          onPressed: onSettingsClicked,
-          tooltip: "设置",
-        ),
-      ],
-    );
+    var actions = <Widget>[];
+    if (currPosition == 1) {
+      actions.add(IconButton(
+        icon: Icon(Icons.search),
+        onPressed: onSearchClicked,
+        tooltip: "搜索识别历史",
+      ));
+    } else {
+      actions.add(IconButton(
+        icon: Icon(Icons.settings),
+        onPressed: onSettingsClicked,
+        tooltip: "设置",
+      ));
+    }
+
+    return AppBar(title: Text(app_name), actions: actions);
   }
 
   //生成底部导航
@@ -76,12 +83,18 @@ class _MainPageState extends State<MainPage> {
     Navigator.pushNamed(context, page_settings);
   }
 
+  void onSearchClicked() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) {
+      return SearchPage();
+    }));
+  }
+
   void onCameraClicked() {
-    DialogUtils.showLoading(context);
+//    DialogUtils.showLoading(context);
     //    Navigator.push(context, MaterialPageRoute(builder: (context) {
 //      return TestPage();
 //    }));
-//    _openCamera();
+    _openCamera();
   }
 
   Future _openCamera() async {

@@ -122,13 +122,13 @@ class _OcrPageState extends State<OcrPage> {
       var resStr = response.toString();
       BaiDuOcrResultBean ocrResultBean =
           BaiDuOcrResultBean.fromJson(jsonDecode(resStr));
-      if (ocrResultBean.error_code != 0) {
+      if (ocrResultBean.errorCode != 0) {
         DialogUtils.dismiss(context);
-        showMsg("识别失败，${ocrResultBean.error_msg}");
+        showMsg("识别失败，${ocrResultBean.errorMsg}");
         return;
       }
       StringBuffer buffer = StringBuffer();
-      for (OcrResultBean words in ocrResultBean.words_result) {
+      for (OcrResultBean words in ocrResultBean.wordsResult) {
         buffer.writeln(words.words);
       }
       DialogUtils.dismiss(context);
@@ -144,6 +144,7 @@ class _OcrPageState extends State<OcrPage> {
 
       saveOcrResult(bean);
 
+      Navigator.pop(context);
       Navigator.push(context, MaterialPageRoute(builder: (context) {
         return OcrResultPage([bean]);
       }));

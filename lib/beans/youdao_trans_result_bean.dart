@@ -1,5 +1,5 @@
 //有道翻译结果
-class TransResultBean {
+class YouDaoTransResultBean {
   String errorCode;
   String query;
   List<String> translation;
@@ -10,7 +10,7 @@ class TransResultBean {
   String tSpeakUrl;
   String speakUrl;
 
-  TransResultBean(
+  YouDaoTransResultBean(
       {this.errorCode,
       this.query,
       this.translation,
@@ -21,8 +21,8 @@ class TransResultBean {
       this.tSpeakUrl,
       this.speakUrl});
 
-  factory TransResultBean.fromDb(Map<String, dynamic> data) {
-    return TransResultBean(
+  factory YouDaoTransResultBean.fromJson(Map<String, dynamic> data) {
+    return YouDaoTransResultBean(
         errorCode: data["errorCode"],
         query: data["query"],
         translation: List.from(data["translation"]),

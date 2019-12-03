@@ -27,7 +27,7 @@ class DBOcrHistoryBean {
       switch (jsonType) {
         case 1:
           _resultBeans =
-              BaiDuOcrResultBean.fromJson(jsonDecode(jsonResult)).words_result;
+              BaiDuOcrResultBean.fromJson(jsonDecode(jsonResult)).wordsResult;
           break;
         case 2:
           break;

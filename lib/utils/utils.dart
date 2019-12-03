@@ -59,6 +59,8 @@ Future<Map<String, dynamic>> getBySP(List<String> keys) async {
 
 //是否有新版本
 bool checkVersionIsUpdate(String currVersion, String newVersion) {
+  int toInt(String num) => int.parse(num);
+
   var currVersionArray = currVersion.split(".").map((v) => toInt(v)).toList();
   var newVersionArray = newVersion.split(".").map((v) => toInt(v)).toList();
 
@@ -76,8 +78,4 @@ bool checkSubVersion(index, currVersionArray, newVersionArray) {
   } else {
     return true;
   }
-}
-
-int toInt(String num) {
-  return int.parse(num);
 }

@@ -60,6 +60,7 @@ class HttpUtils {
         });
   }
 
+  //提交反馈-TypeForm
   static Future<Response> submitFeedBackByTypeForm(
       answer1, answer2, token, landedAt) async {
     LogUtils.i(
@@ -95,22 +96,30 @@ class HttpUtils {
   }
 
   static img2Base64(imgPath, width, height) async {
-//    ImageUtils.Image image =
-//        ImageUtils.decodeImage(File(imgPath).readAsBytesSync());
-//    //将图片直接裁剪为屏幕的宽度，方便定位
-//    ImageUtils.Image thumbnail =
-//        ImageUtils.copyResize(image, width: screenSize.width.toInt());
-//    List<int> imageBytes = ImageUtils.encodeJpg(thumbnail);
-
     final imageBytes = await ImageUtils.compressImage(imgPath,
         minWidth: width, minHeight: height);
-
-//    var file = await ImageUtils.compressImageAndGetFile(imgPath);
-//    final imageBytes = file.readAsBytesSync();
-//    LogUtils.i("image after length: ${imageBytes.length}");
-//    Img.decodeImage(imageBytes);
-
     return base64Encode(imageBytes);
+  }
+
+  //翻译-百度
+  static Future<Response> translateByBaidu(text, from, to) {
+    //把当前时间作为一个salt
+    int currTime = getTimestamp();
+    return _getInstance().post(baidu_translate_url,
+        data: FormData.from({
+          "q": text,
+          "from": from,
+          "to": to,
+          "appid": baidu_translate_app_id,
+          "salt": currTime,
+          "sign": _getBaiDuSign(
+              "$baidu_translate_app_id$text$currTime$baidu_translate_secret")
+        }));
+  }
+
+  //根据百度要求生成签名信息
+  static String _getBaiDuSign(String text) {
+    return md5.convert(utf8.encode(text)).toString();
   }
 
   //翻译-有道

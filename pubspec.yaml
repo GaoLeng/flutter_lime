@@ -13,6 +13,8 @@ dependencies:
   cupertino_icons: ^0.1.2
   #图片选择器
   image_picker: ^0.6.1
+  #图片选择器（多选）
+  multi_image_picker: ^4.4.1
   #可定制相机
   camera:
     git:
@@ -62,7 +64,7 @@ dependencies:
   #下拉刷新、上拉加载
   flutter_easyrefresh: ^2.0.0
   #官方webview
-  webview_flutter: ^0.3.10+4
+  webview_flutter: ^0.3.11+2
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -74,6 +76,8 @@ flutter:
     - images/logo.png
     - images/placeholder.png
     - images/wechat_appreciates.jpg
+    - images/status_empty.png
+    - images/status_error.png
 
   fonts:
     - family: iconfont

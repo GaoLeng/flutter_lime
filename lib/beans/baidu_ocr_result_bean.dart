@@ -2,22 +2,22 @@ import 'ocr_result_bean.dart';
 
 //百度ocr识别结果实体
 class BaiDuOcrResultBean {
-  int log_id;
-  int error_code;
-  String error_msg;
-  List<OcrResultBean> words_result;
+  int logId;
+  int errorCode;
+  String errorMsg;
+  List<OcrResultBean> wordsResult;
 
   BaiDuOcrResultBean(
-      {this.log_id, this.error_code, this.error_msg, this.words_result});
+      {this.logId, this.errorCode, this.errorMsg, this.wordsResult});
 
   factory BaiDuOcrResultBean.fromJson(Map<String, dynamic> map) {
     var words = map["words_result"] as List;
 
     return BaiDuOcrResultBean(
-        log_id: map["log_id"],
-        error_code: map["error_code"] == null ? 0 : map["error_code"],
-        error_msg: map["error_msg"],
-        words_result: words?.map((value) {
+        logId: map["log_id"],
+        errorCode: map["error_code"] == null ? 0 : map["error_code"],
+        errorMsg: map["error_msg"],
+        wordsResult: words?.map((value) {
           return OcrResultBean.fromJson(value);
         })?.toList());
   }

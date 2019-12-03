@@ -42,6 +42,11 @@ const String youdao_translate_url = "https://openapi.youdao.com/api";
 const String youdao_app_key = "535d76e841c7e282";
 const String youdao_app_secret = "rTHl5CKyLF1aNjFbppTK3jAmAthG5WaH";
 
+//--------------------BaiDu 翻译-------------------------
+const String baidu_translate_url =
+    "https://fanyi-api.baidu.com/api/trans/vip/translate";
+const String baidu_translate_app_id = "20190810000325424";
+const String baidu_translate_secret = "ir2tHIp_KWFslUnweNCU";
 //--------------------BaiDu OCR-------------------------
 //通用基础版
 const String badiu_ocr_basic_url =
@@ -64,6 +69,7 @@ const String JSON_RESULT = "JSON_RESULT";
 const String JSON_TYPE = "JSON_TYPE";
 const String SIZE_FOR_OCR = "SIZE_FOR_OCR";
 const String DATE_TIME = "DATE_TIME";
+const String TEXT = "TEXT";
 
 //----------------------设置---------------------------
 const String settings_about = "关于$app_name";

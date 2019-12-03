@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_lime/beans/trans_result_bean.dart';
+import 'package:flutter_lime/beans/baidu_translate_result_bean.dart';
+import 'package:flutter_lime/beans/youdao_trans_result_bean.dart';
 import 'package:flutter_lime/utils/const.dart';
 import 'package:flutter_lime/utils/http_utils.dart';
 import 'package:flutter_lime/utils/log_utils.dart';
@@ -23,14 +24,18 @@ class TranslatePage extends StatefulWidget {
 class _TranslatePageState extends State<TranslatePage> {
   TextEditingController _textEditingController;
   TextEditingController _translatedEditingController;
+
   static const Map<String, String> _languageItemMaps = {
-    "检测语言": "检测语言",
-    "中文": "中文",
-    "英语": "英语",
-    "日语": "日语"
+    "自动检测": "auto",
+    "中文": "zh",
+    "英语": "en",
+    "日语": "jp",
+    "韩语": "kor",
+    "繁体中文": "cht",
+    "文言文": "wyw",
   };
-  String transFrom = _languageItemMaps["检测语言"];
-  String transTo = _languageItemMaps["检测语言"];
+  String transFrom = _languageItemMaps["自动检测"];
+  String transTo = _languageItemMaps["中文"];
 
   //是否已经点击过翻译按钮，判断是否显示译文区域
   bool _hasTranslated = false;
@@ -63,7 +68,7 @@ class _TranslatePageState extends State<TranslatePage> {
           Expanded(child: Center(child: _generateDropDownBtn(true))),
           IconButton(
             icon: Icon(MyIcons.exchange, color: Colors.grey[700]),
-            onPressed: () {},
+            onPressed: _onExchangeClicked,
           ),
           Expanded(child: Center(child: _generateDropDownBtn(false))),
         ],
@@ -87,7 +92,7 @@ class _TranslatePageState extends State<TranslatePage> {
         underline: Container(),
         isExpanded: false,
         style: TextStyle(fontSize: 16, color: Colors.grey[800]),
-        items: _generateLanguageItems(),
+        items: _generateLanguageItems(isTransFrom),
         value: isTransFrom ? transFrom : transTo,
         onChanged: (value) {
           if (isTransFrom)
@@ -100,9 +105,11 @@ class _TranslatePageState extends State<TranslatePage> {
   }
 
   //生成语言选项
-  List<DropdownMenuItem> _generateLanguageItems() {
+  List<DropdownMenuItem> _generateLanguageItems(bool isTransFrom) {
     List<DropdownMenuItem> items = List();
+
     _languageItemMaps.forEach((key, value) {
+      if (value == "auto" && !isTransFrom) return;
       items.add(DropdownMenuItem(child: Text(key), value: value));
     });
     return items;
@@ -196,6 +203,16 @@ class _TranslatePageState extends State<TranslatePage> {
     );
   }
 
+  //from 和 to 互换
+  void _onExchangeClicked() {
+    setState(() {
+      final temp = transFrom;
+      transFrom = transTo;
+      transTo = temp;
+      if (transTo == "auto") transTo = transFrom;
+    });
+  }
+
   _translate() {
 //    _translatedEditingController.text = _textEditingController.text;
 //    setState(() {
@@ -204,25 +221,27 @@ class _TranslatePageState extends State<TranslatePage> {
 //    return;
     int currTime = getTimestamp() ~/ 1000;
     LogUtils.i("currTime: $currTime");
-    HttpUtils.translateByYouDao(_textEditingController.text, "auto", "auto")
+    HttpUtils.translateByBaidu(_textEditingController.text, transFrom, transTo)
         .then((value) {
-      LogUtils.i("youdao result: $value");
-      TransResultBean bean =
-          TransResultBean.fromDb(jsonDecode(value.toString()));
-      if (bean.errorCode != "0") {
-        showMsg("翻译失败，错误码： ${bean.errorCode}");
+      LogUtils.i("_translate result: $value");
+      final jsonRes = jsonDecode(value.toString());
+      final errorCode = jsonRes["error_code"];
+      if (errorCode != null && errorCode != "52000") {
+        showMsg("翻译失败，错误码： $errorCode");
         return;
       }
+      BaiDuTransResultBean bean = BaiDuTransResultBean.fromJson(jsonRes);
 
       StringBuffer buffer = StringBuffer();
-      bean.translation.forEach((item) {
-        buffer.writeln(item);
+      bean.trans_result.forEach((item) {
+        if (bean.trans_result.last == item) {
+          buffer.write(item.dst);
+          return;
+        }
+        buffer.writeln(item.dst);
       });
-      String result = buffer.toString();
-      if (result.endsWith("\n")) {
-        result = result.substring(0, result.length - 1);
-      }
-      _translatedEditingController.text = result;
+
+      _translatedEditingController.text = buffer.toString();
       setState(() {
         _hasTranslated = true;
       });
